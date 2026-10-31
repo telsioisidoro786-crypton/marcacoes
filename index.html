@@ -3,13 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <title>Marcações</title>
 <style>
   :root{--acc:#f5f5f5;--bg:#090909;--card:#151515;--line:#2d2d2d;--txt:#f7f7f7;--mut:#9b9b9b;--ok:#f5f5f5;
-        --r:16px;--fh:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+        --r:16px;--fh:Manrope,system-ui,sans-serif;--fb:Inter,system-ui,sans-serif;
         --sel:#232323;--shadow:0 18px 50px rgba(0,0,0,.24)}
   *{box-sizing:border-box}
-  body{margin:0;background:radial-gradient(circle at 50% -10%,#242424 0,#101010 34%,var(--bg) 70%);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes breathe{0%,100%{box-shadow:0 8px 22px rgba(255,255,255,.06)}50%{box-shadow:0 10px 30px rgba(255,255,255,.14)}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .icon{width:17px;height:17px;display:inline-flex;align-items:center;justify-content:center;vertical-align:-3px;margin-right:6px}
+  .icon svg,.ui-icon{width:100%;height:100%;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  button,a{transition:transform .2s ease,background-color .2s ease,border-color .2s ease,color .2s ease,box-shadow .2s ease}
+  .wrap>*{animation:rise .55s both}
+  .wrap> :nth-child(1){animation-delay:.03s}.wrap> :nth-child(2){animation-delay:.08s}.wrap> :nth-child(3){animation-delay:.13s}.wrap> :nth-child(4){animation-delay:.18s}.wrap> :nth-child(5){animation-delay:.23s}.wrap> :nth-child(6){animation-delay:.28s}.wrap> :nth-child(7){animation-delay:.33s}
+  .opt:hover,.chip:hover:not(:disabled),.acoes a:hover,.sec:hover{transform:translateY(-2px);border-color:#8a8a8a}
+  body{margin:0;background:radial-gradient(circle at 50% -10%,#242424 0,#101010 34%,var(--bg) 70%);color:var(--txt);font-family:var(--fb);min-height:100vh}
   .wrap{max-width:480px;margin:0 auto;padding:18px 16px 138px;counter-reset:n}
   .msg{max-width:480px;margin:0 auto;padding:60px 24px;text-align:center;color:var(--mut)}
   .msg b{color:var(--txt);display:block;font-size:1.1rem;margin-bottom:8px}
@@ -20,7 +32,7 @@
   .brand img{width:34px;height:34px;object-fit:contain}
   #logo{width:82px;height:82px;margin:0 auto 12px;border-radius:24px;background:#050505;border:1px solid #505050;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden}
   #logo img{width:100%;height:100%;object-fit:cover}
-  header h1{margin:0;font-size:1.55rem;letter-spacing:.2px;font-family:var(--fh);font-weight:750}
+  header h1{margin:0;font-size:1.55rem;letter-spacing:.2px;font-family:var(--fh);font-weight:800}
   header p{margin:4px 0 0;color:var(--mut);font-size:.9rem}
   #end{font-size:.85rem}
   .acoes{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
@@ -48,7 +60,7 @@
   .bar>div{max-width:480px;margin:0 auto}
   .sum{color:var(--mut);font-size:.85rem;margin-bottom:8px;min-height:1.2em}
   .go{display:block;width:100%;border:0;border-radius:var(--r);padding:15px;font-size:1rem;font-weight:800;letter-spacing:.01em;background:#f5f5f5;color:#080808;cursor:pointer;text-align:center;text-decoration:none;font-family:inherit;box-shadow:0 8px 22px rgba(255,255,255,.08);transition:transform .18s ease,background .18s ease}
-  .go:not(:disabled):hover{background:#fff;transform:translateY(-1px)}
+  .go:not(:disabled):hover{background:#fff;transform:translateY(-2px);animation:breathe 1.8s ease-in-out infinite}
   .go:disabled{background:var(--line);color:var(--mut);cursor:not-allowed}
   .sec{display:block;width:100%;border:1px solid var(--line);border-radius:var(--r);padding:13px;font-size:.95rem;background:var(--card);color:var(--txt);cursor:pointer;margin-top:10px;text-align:center;text-decoration:none;font-family:inherit}
   .empty{color:var(--mut);font-size:.9rem;grid-column:1/-1}
@@ -58,6 +70,8 @@
   .done h1{margin:0 0 6px;font-family:var(--fh)}
   .done .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:18px 0;text-align:left;line-height:1.7;font-size:.95rem}
   .done p{color:var(--mut);font-size:.9rem}
+  .done{animation:rise .55s both}.done .tick{animation:rise .55s .08s both}
+  @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
@@ -106,7 +120,7 @@
 </div>
 
 <div id="feito" class="done" style="display:none">
-  <div class="tick">✓</div>
+  <div class="tick" aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"></path></svg></div>
   <h1>Marcação registada!</h1>
   <p id="fNome"></p>
   <div class="card" id="fResumo"></div>
@@ -121,6 +135,15 @@ import { $, esc, kz, iso, hoje, fmtData, dowDe, DIAS, limpar, aplicarTema, socia
          servicosAtivos, listaBarbeiros, trabalhaDia, proximosDias, gerarSlots, setOcupados,
          montarMsg, slugOk } from "./core.js";
 import { criarMarcacao } from "./reservas.js";
+
+const I={
+  scissors:'<span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="6" cy="6" r="2.5"></circle><circle cx="6" cy="18" r="2.5"></circle><path d="m8 7 12 5-12 5M8 7l12-5M8 17l12 5"></path></svg></span>',
+  pin:'<span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg></span>',
+  phone:'<span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 16.5v3a2 2 0 0 1-2.2 2 18.7 18.7 0 0 1-8.1-2.9 18.4 18.4 0 0 1-5.3-5.3A18.7 18.7 0 0 1 2.5 5.2 2 2 0 0 1 4.5 3h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.7a2 2 0 0 1-.4 2.1L8.5 10.8a16 16 0 0 0 4.7 4.7l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.6 2.7.7a2 2 0 0 1 1.7 2Z"></path></svg></span>',
+  map:'<span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18-6 3V6l6-3 6 3 6-3v15l-6 3-6-3Z"></path><path d="M9 3v15M15 6v15"></path></svg></span>',
+  user:'<span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"></circle><path d="M5 21a7 7 0 0 1 14 0"></path></svg></span>',
+  calendar:'<span class="icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg></span>'
+};
 
 /* ---------- que barbearia é? (/slug  ou  ?n=slug) ---------- */
 const params = new URLSearchParams(location.search);
@@ -169,14 +192,14 @@ function render(){
   if(S.hora && !hs.find(x=>x.h===S.hora&&x.livre)) S.hora=null;
 
   $("capa").innerHTML=cfg.capa?`<img src="${esc(cfg.capa)}" alt="" onerror="this.remove()">`:"";
-  $("logo").innerHTML=cfg.logo?`<img src="${esc(cfg.logo)}" alt="" onerror="this.parentNode.textContent='✂️'">`:"✂️";
+  $("logo").innerHTML=cfg.logo?`<img src="${esc(cfg.logo)}" alt="" onerror="this.parentNode.innerHTML=I.scissors">`:I.scissors;
   $("nome").textContent=cfg.nome; $("sub").textContent=cfg.sub;
-  $("end").textContent=cfg.endereco?"📍 "+cfg.endereco:"";
+  $("end").innerHTML=cfg.endereco?I.pin+esc(cfg.endereco):"";
 
   const ig=social(cfg.instagram,"https://instagram.com/"), fb=social(cfg.facebook,"https://facebook.com/");
   const ac=[];
-  if(cfg.telefone) ac.push(`<a href="tel:${esc(cfg.telefone)}">📞 Ligar</a>`);
-  if(cfg.maps) ac.push(`<a href="${esc(cfg.maps)}" target="_blank" rel="noopener">🗺️ Como chegar</a>`);
+  if(cfg.telefone) ac.push(`<a href="tel:${esc(cfg.telefone)}">${I.phone}Ligar</a>`);
+  if(cfg.maps) ac.push(`<a href="${esc(cfg.maps)}" target="_blank" rel="noopener">${I.map}Como chegar</a>`);
   if(ig) ac.push(`<a href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
   if(fb) ac.push(`<a href="${esc(fb)}" target="_blank" rel="noopener">Facebook</a>`);
   $("acoes").innerHTML=ac.join("");
@@ -243,8 +266,8 @@ $("enviar").addEventListener("click",async()=>{
              nome:p.cliente,contacto:p.telefone||"—"};
     $("app").style.display="none";
     $("fNome").textContent=`Obrigado, ${p.cliente}.`;
-    $("fResumo").innerHTML=`<b>${esc(cfg.nome)}</b><br>✂️ ${esc(v.servico)} · ${esc(v.preco)}<br>`
-      +(r.barbeiro.nome?`👤 ${esc(r.barbeiro.nome)}<br>`:"")+`📅 ${v.data} às ${v.hora}`;
+    $("fResumo").innerHTML=`<b>${esc(cfg.nome)}</b><br>${I.scissors}${esc(v.servico)} · ${esc(v.preco)}<br>`
+      +(r.barbeiro.nome?`${I.user}${esc(r.barbeiro.nome)}<br>`:"")+`${I.calendar}${v.data} às ${v.hora}`;
     $("fWa").href=`https://wa.me/${cfg.whatsapp}?text=${encodeURIComponent(montarMsg(cfg.msg,v))}`;
     $("feito").style.display="";
     scrollTo(0,0);
