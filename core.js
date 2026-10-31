@@ -29,7 +29,13 @@ export const toM = t => { const [h,m]=t.split(":").map(Number); return h*60+m; }
 export const hhmm = m => `${pad(Math.floor(m/60))}:${pad(m%60)}`;
 export const fmtData = s => s.split("-").reverse().join("/");
 export const dowDe = s => { const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d).getDay(); };
-export const urlOk = v => /^https?:\/\//i.test(v||"") ? String(v).slice(0,500) : "";
+export const urlOk = v => {
+  const s=String(v||"").trim();
+  if(/^https?:\/\//i.test(s)) return s.slice(0,500);
+  if(/^data:image\/(png|jpe?g|webp|gif|svg\+xml);base64,/i.test(s)) return s.slice(0,800000);
+  if(/^<svg[\s>]/i.test(s)) return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(s).slice(0,800000)}`;
+  return "";
+};
 export const social = (v,base) => {
   v=(v||"").trim(); if(!v) return ""; if(/^https?:\/\//i.test(v)) return v.slice(0,500);
   const h=v.replace(/^@/,"").replace(/[^A-Za-z0-9._-]/g,""); return h?base+h:"";
