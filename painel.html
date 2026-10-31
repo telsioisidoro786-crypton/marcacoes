@@ -318,6 +318,8 @@ const auth=getAuth(app);
 
 let USER=null, NEG=[], atual=null, CFG=null, dia=hoje(), unsubM=null, LISTA=[], sujo=false;
 const BASE=location.href.split("#")[0].split("?")[0].replace(/painel(\.html)?$/,"");
+/* link com ?n= funciona em qualquer alojamento, sem regras de redirecionamento */
+const linkDe=s=>BASE+"?n="+s;
 
 /* ================= ENTRAR ================= */
 $("lEntrar").onclick=async()=>{
@@ -363,7 +365,7 @@ function selecionar(slug){
   const n=NEG.find(x=>x.slug===slug);
   CFG=limpar(n.data.cfg); sujo=false; pintarSujo();
   $("hNeg").innerHTML=NEG.map(x=>`<option value="${esc(x.slug)}" ${x.slug===slug?"selected":""}>${esc(limpar(x.data.cfg).nome)}</option>`).join("");
-  $("hLink").textContent=BASE+slug; $("hAbrir").href=BASE+slug;
+  $("hLink").textContent=linkDe(slug); $("hAbrir").href=linkDe(slug);
   banner(); preencher(); mostrar("vApp");
   dia=hoje(); $("dData").value=dia; ouvirDia();
   document.querySelector('[data-tab="tMarc"]').click();
@@ -374,16 +376,16 @@ $("hNova").onclick=()=>{ $("cnCancel").style.display=""; $("cnNome").value=""; $
 $("cnCancel").onclick=()=>mostrar("vApp");
 $("hCopiar").onclick=e=>{
   const b=e.currentTarget, t=b.textContent;
-  (navigator.clipboard?navigator.clipboard.writeText(BASE+atual):Promise.reject())
+  (navigator.clipboard?navigator.clipboard.writeText(linkDe(atual)):Promise.reject())
     .then(()=>{ b.textContent="Copiado ✓"; setTimeout(()=>b.textContent=t,1600); })
-    .catch(()=>prompt("Copie o link:",BASE+atual));
+    .catch(()=>prompt("Copie o link:",linkDe(atual)));
 };
 
 const slugify=s=>s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+/,"").slice(0,40);
 let slugManual=false;
 $("cnNome").addEventListener("input",()=>{ if(!slugManual){ $("cnSlug").value=slugify($("cnNome").value).replace(/-+$/,""); prevSlug(); } });
 $("cnSlug").addEventListener("input",()=>{ slugManual=true; $("cnSlug").value=slugify($("cnSlug").value); prevSlug(); });
-const prevSlug=()=>{ $("cnPrev").textContent=$("cnSlug").value?"O seu link: "+BASE+$("cnSlug").value:""; };
+const prevSlug=()=>{ $("cnPrev").textContent=$("cnSlug").value?"O seu link: "+linkDe($("cnSlug").value):""; };
 $("cnOk").onclick=async()=>{
   msg($("cnErr"),"");
   const s=$("cnSlug").value.replace(/-+$/,""), nome=$("cnNome").value.trim();
