@@ -6,10 +6,10 @@
 <meta name="robots" content="noindex">
 <title>Painel · Marcações</title>
 <style>
-  :root{--acc:#d4a24c;--bg:#111;--card:#1b1b1b;--line:#2b2b2b;--txt:#f2f2f2;--mut:#9a9a9a;--ok:#25d366;--bad:#e5484d;--r:12px}
+  :root{--acc:#f5f5f5;--bg:#090909;--card:#151515;--line:#2d2d2d;--txt:#f7f7f7;--mut:#9b9b9b;--ok:#f5f5f5;--bad:#ef6b70;--r:16px;--shadow:0 18px 50px rgba(0,0,0,.24)}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-  .w{max-width:560px;margin:0 auto;padding:16px 16px 40px}
+  body{margin:0;background:radial-gradient(circle at 50% -10%,#242424 0,#101010 34%,var(--bg) 70%);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+  .w{max-width:560px;margin:0 auto;padding:20px 16px 48px}
   h1{font-size:1.25rem;margin:0}
   label{display:block;font-size:.8rem;color:var(--mut);margin:14px 0 6px}
   input,select,textarea{width:100%;background:var(--card);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:12px;font-size:1rem;margin-bottom:8px;font-family:inherit}
@@ -18,17 +18,22 @@
   input[type=color]{padding:2px;height:44px}
   input[type=checkbox]{width:auto;margin:0}
   button{font-family:inherit}
-  .go{display:block;width:100%;border:0;border-radius:var(--r);padding:14px;font-size:1rem;font-weight:700;background:var(--acc);color:#111;cursor:pointer}
+  .go{display:block;width:100%;border:0;border-radius:var(--r);padding:14px;font-size:1rem;font-weight:800;letter-spacing:.01em;background:#f5f5f5;color:#080808;cursor:pointer;box-shadow:0 8px 22px rgba(255,255,255,.08);transition:transform .18s ease,background .18s ease}
+  .go:not(:disabled):hover{background:#fff;transform:translateY(-1px)}
   .go:disabled{opacity:.5;cursor:not-allowed}
   .sec{display:block;width:100%;border:1px solid var(--line);border-radius:var(--r);padding:12px;font-size:.95rem;background:var(--card);color:var(--txt);cursor:pointer;margin-top:8px}
   .add{background:transparent;border:1px dashed var(--line);color:var(--acc);border-radius:10px;padding:11px;width:100%;cursor:pointer;margin:6px 0}
   .hint{font-size:.78rem;color:var(--mut);margin:6px 0 0}
   .erro{background:#3a1616;border:1px solid #7a2a2a;color:#ffb4b4;border-radius:10px;padding:10px 13px;font-size:.88rem;margin:10px 0;display:none}
-  .okm{background:#12301c;border:1px solid #1f5c35;color:#9be8b6;border-radius:10px;padding:10px 13px;font-size:.88rem;margin:10px 0;display:none}
-  .centro{text-align:center;padding:40px 0 16px}
+  .okm{background:#242424;border:1px solid #5a5a5a;color:#f2f2f2;border-radius:10px;padding:10px 13px;font-size:.88rem;margin:10px 0;display:none}
+  .centro{text-align:center;padding:30px 0 18px}
+  .brand{display:flex;align-items:center;justify-content:center;gap:11px;margin-bottom:18px;color:var(--mut);font-size:.7rem;font-weight:800;letter-spacing:.3em;text-transform:uppercase}
+  .brand img{width:42px;height:42px;object-fit:contain}
+  .brand-mini{display:flex;align-items:center;gap:9px;margin:0 0 14px;color:var(--mut);font-size:.68rem;font-weight:800;letter-spacing:.24em;text-transform:uppercase}
+  .brand-mini img{width:28px;height:28px;object-fit:contain}
   .view{display:none}
   .view.on{display:block}
-  .box{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;margin-top:18px}
+  .box{background:rgba(21,21,21,.92);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-top:18px;box-shadow:var(--shadow)}
   .lnk{background:none;border:0;color:var(--acc);cursor:pointer;font-size:.85rem;padding:6px 0}
 
   /* cabeçalho da app */
@@ -39,15 +44,15 @@
   .link span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .link button{border:0;background:var(--acc);color:#111;border-radius:8px;padding:7px 11px;font-weight:700;cursor:pointer;font-size:.8rem}
   .link a{color:var(--acc);font-size:.8rem;text-decoration:none}
-  .banner{background:#2a2210;border:1px solid #5c4a1c;color:#f0d28a;border-radius:10px;padding:10px 13px;font-size:.85rem;margin-bottom:12px}
+  .banner{background:#242424;border:1px solid #4a4a4a;color:#f2f2f2;border-radius:10px;padding:10px 13px;font-size:.85rem;margin-bottom:12px}
   .tabs{display:flex;gap:6px;margin-bottom:14px}
   .tabs button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--mut);border-radius:10px;padding:11px;cursor:pointer;font-weight:600}
-  .tabs button.on{background:var(--acc);color:#111;border-color:var(--acc)}
+  .tabs button.on{background:#f5f5f5;color:#080808;border-color:#f5f5f5}
 
   /* marcações */
   .modos{display:flex;gap:6px;margin-bottom:10px}
   .modos button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--mut);border-radius:10px;padding:10px;cursor:pointer;font-weight:600}
-  .modos button.on{border-color:var(--acc);color:var(--acc)}
+  .modos button.on{border-color:#f5f5f5;color:#f5f5f5;background:#232323}
   .dh{margin:16px 0 8px;font-size:.8rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc)}
   .dnav{display:flex;gap:6px;margin-bottom:10px}
   .dnav input{margin:0;flex:1}
@@ -56,8 +61,8 @@
   .resumo div{flex:1;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px;text-align:center;font-size:.78rem;color:var(--mut)}
   .resumo b{display:block;color:var(--txt);font-size:1.05rem}
   .mc{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
-  .mc.confirmada{border-left-color:var(--ok)}
-  .mc.concluida{border-left-color:#5b8def;opacity:.8}
+  .mc.confirmada{border-left-color:#f5f5f5}
+  .mc.concluida{border-left-color:#8a8a8a;opacity:.8}
   .mc.cancelada{border-left-color:var(--bad);opacity:.5}
   .mh{display:flex;justify-content:space-between;align-items:center}
   .mh b{font-size:1.15rem}
@@ -111,7 +116,7 @@
 
   <!-- ENTRAR -->
   <div id="vLogin" class="view">
-    <div class="centro"><div style="font-size:2.2rem">✂️</div><h1>Painel da barbearia</h1>
+    <div class="centro"><div class="brand"><img src="./assets/logo-mark.png" alt="Marcações"><span>Marcações</span></div><h1>Painel da barbearia</h1>
       <p class="hint">Entre para ver e gerir as marcações.</p></div>
     <div class="box">
       <label style="margin-top:0">Email</label><input id="lEmail" type="email" autocomplete="email">
@@ -125,7 +130,7 @@
 
   <!-- CRIAR BARBEARIA -->
   <div id="vCriar" class="view">
-    <div class="centro"><div style="font-size:2.2rem">🏪</div><h1>Nova barbearia</h1>
+    <div class="centro"><div class="brand"><img src="./assets/logo-mark.png" alt="Marcações"><span>Marcações</span></div><h1>Nova barbearia</h1>
       <p class="hint">Escolha o nome da barbearia e o endereço do seu link.</p></div>
     <div class="box">
       <label style="margin-top:0">Nome da barbearia</label><input id="cnNome" maxlength="60" placeholder="Ex.: Fernando Barbearia">
@@ -141,6 +146,7 @@
 
   <!-- APP -->
   <div id="vApp" class="view">
+    <div class="brand-mini"><img src="./assets/logo-mark.png" alt="Marcações"><span>Marcações</span></div>
     <div class="top">
       <select id="hNeg"></select>
       <button id="hNova" title="Adicionar barbearia">＋</button>
@@ -524,7 +530,7 @@ $("nmOk").onclick=async()=>{
 };
 
 /* ================= PERSONALIZAR ================= */
-const PRESETS=["#d4a24c","#e5484d","#3b82f6","#22c55e","#a855f7","#f97316"];
+const PRESETS=["#f5f5f5","#d6d6d6","#a8a8a8","#737373","#404040","#171717"];
 $("presets").innerHTML=PRESETS.map(c=>`<button style="background:${c}" data-cor="${c}" aria-label="${c}"></button>`).join("");
 const marcarSujo=()=>{ sujo=true; pintarSujo(); };
 function pintarSujo(){ $("sujoMsg").textContent=sujo?"Tem alterações por guardar.":""; }

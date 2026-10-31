@@ -5,20 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Marcações</title>
 <style>
-  :root{--acc:#d4a24c;--bg:#111;--card:#1b1b1b;--line:#2b2b2b;--txt:#f2f2f2;--mut:#9a9a9a;--ok:#25d366;
-        --r:12px;--fh:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-        --sel:color-mix(in srgb,var(--acc) 16%,var(--bg))}
+  :root{--acc:#f5f5f5;--bg:#090909;--card:#151515;--line:#2d2d2d;--txt:#f7f7f7;--mut:#9b9b9b;--ok:#f5f5f5;
+        --r:16px;--fh:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+        --sel:#232323;--shadow:0 18px 50px rgba(0,0,0,.24)}
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-  .wrap{max-width:480px;margin:0 auto;padding:16px 16px 130px;counter-reset:n}
+  body{margin:0;background:radial-gradient(circle at 50% -10%,#242424 0,#101010 34%,var(--bg) 70%);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;min-height:100vh}
+  .wrap{max-width:480px;margin:0 auto;padding:18px 16px 138px;counter-reset:n}
   .msg{max-width:480px;margin:0 auto;padding:60px 24px;text-align:center;color:var(--mut)}
   .msg b{color:var(--txt);display:block;font-size:1.1rem;margin-bottom:8px}
   .msg code{background:var(--card);padding:2px 6px;border-radius:6px}
   #capa img{width:100%;height:130px;object-fit:cover;border-radius:var(--r);display:block}
-  header{text-align:center;padding:20px 0 8px}
-  #logo{width:72px;height:72px;margin:0 auto 10px;border-radius:50%;background:var(--card);border:2px solid var(--acc);display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden}
+  header{text-align:center;padding:12px 0 10px}
+  .brand{display:flex;align-items:center;justify-content:center;gap:10px;margin:4px 0 18px;color:var(--mut);font-size:.68rem;font-weight:800;letter-spacing:.28em;text-transform:uppercase}
+  .brand img{width:34px;height:34px;object-fit:contain}
+  #logo{width:82px;height:82px;margin:0 auto 12px;border-radius:24px;background:#050505;border:1px solid #505050;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden}
   #logo img{width:100%;height:100%;object-fit:cover}
-  header h1{margin:0;font-size:1.45rem;letter-spacing:.5px;font-family:var(--fh)}
+  header h1{margin:0;font-size:1.55rem;letter-spacing:.2px;font-family:var(--fh);font-weight:750}
   header p{margin:4px 0 0;color:var(--mut);font-size:.9rem}
   #end{font-size:.85rem}
   .acoes{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
@@ -28,12 +30,12 @@
   h2::before{counter-increment:n;content:counter(n) " · "}
   .opt{display:flex;justify-content:space-between;align-items:center;width:100%;background:var(--card);border:1px solid var(--line);color:var(--txt);border-radius:var(--r);padding:14px;margin-bottom:8px;font-size:1rem;text-align:left;cursor:pointer;font-family:inherit}
   .opt small{color:var(--mut);display:block;margin-top:2px;font-size:.8rem}
-  .opt.sel{border-color:var(--acc);background:var(--sel)}
-  .price{color:var(--acc);font-weight:600;white-space:nowrap;margin-left:10px;text-align:right}
+  .opt.sel{border-color:#f5f5f5;background:#242424;box-shadow:0 0 0 1px rgba(255,255,255,.12) inset}
+  .price{color:#f5f5f5;font-weight:650;white-space:nowrap;margin-left:10px;text-align:right}
   .price s{color:var(--mut);font-weight:400;font-size:.8rem;display:block}
   .row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
   .chip{flex:0 0 auto;background:var(--card);border:1px solid var(--line);color:var(--txt);border-radius:calc(var(--r)*.8);padding:10px 14px;cursor:pointer;text-align:center;font-size:.95rem;min-width:64px;font-family:inherit}
-  .chip.sel{border-color:var(--acc);background:var(--sel)}
+  .chip.sel{border-color:#f5f5f5;background:#242424;box-shadow:0 0 0 1px rgba(255,255,255,.12) inset}
   .chip:disabled{opacity:.3;text-decoration:line-through;cursor:not-allowed}
   .chip b{display:block;font-size:1.05rem}
   .slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
@@ -45,13 +47,14 @@
   .bar{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding:12px 16px;z-index:4}
   .bar>div{max-width:480px;margin:0 auto}
   .sum{color:var(--mut);font-size:.85rem;margin-bottom:8px;min-height:1.2em}
-  .go{display:block;width:100%;border:0;border-radius:var(--r);padding:15px;font-size:1rem;font-weight:700;background:var(--ok);color:#06210f;cursor:pointer;text-align:center;text-decoration:none;font-family:inherit}
+  .go{display:block;width:100%;border:0;border-radius:var(--r);padding:15px;font-size:1rem;font-weight:800;letter-spacing:.01em;background:#f5f5f5;color:#080808;cursor:pointer;text-align:center;text-decoration:none;font-family:inherit;box-shadow:0 8px 22px rgba(255,255,255,.08);transition:transform .18s ease,background .18s ease}
+  .go:not(:disabled):hover{background:#fff;transform:translateY(-1px)}
   .go:disabled{background:var(--line);color:var(--mut);cursor:not-allowed}
   .sec{display:block;width:100%;border:1px solid var(--line);border-radius:var(--r);padding:13px;font-size:.95rem;background:var(--card);color:var(--txt);cursor:pointer;margin-top:10px;text-align:center;text-decoration:none;font-family:inherit}
   .empty{color:var(--mut);font-size:.9rem;grid-column:1/-1}
   .erro{background:#3a1616;border:1px solid #7a2a2a;color:#ffb4b4;border-radius:var(--r);padding:11px 14px;font-size:.88rem;margin-bottom:10px;display:none}
   .done{max-width:480px;margin:0 auto;padding:40px 20px;text-align:center}
-  .done .tick{width:68px;height:68px;border-radius:50%;background:var(--ok);color:#06210f;font-size:2.2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+  .done .tick{width:68px;height:68px;border-radius:50%;background:#f5f5f5;color:#080808;font-size:2.2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
   .done h1{margin:0 0 6px;font-family:var(--fh)}
   .done .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:18px 0;text-align:left;line-height:1.7;font-size:.95rem}
   .done p{color:var(--mut);font-size:.9rem}
@@ -65,6 +68,7 @@
   <div class="wrap">
     <div id="capa"></div>
     <header>
+      <div class="brand"><img src="./assets/logo-mark.png" alt="Marcações"><span>Marcações</span></div>
       <div id="logo"></div>
       <h1 id="nome"></h1>
       <p id="sub"></p>

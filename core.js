@@ -6,7 +6,7 @@ export const CEL = 15; // granularidade da agenda, em minutos
 
 export const DEFAULT = {
   nome:"Minha Barbearia", sub:"Marque o seu corte em 1 minuto", whatsapp:"244900000000",
-  logo:"", capa:"", cor:"#d4a24c", tema:"escuro", fonte:"moderna", cantos:"suave",
+  logo:"", capa:"", cor:"#f5f5f5", tema:"escuro", fonte:"moderna", cantos:"suave",
   telefone:"", endereco:"", maps:"", instagram:"", facebook:"",
   aviso:"", pagamento:"", politica:"", msg:MSG_DEFAULT,
   servicos:[
@@ -87,9 +87,9 @@ export function limpar(c){
 export function aplicarTema(cfg){
   const r=document.documentElement.style, claro=cfg.tema==="claro";
   r.setProperty("--acc",cfg.cor);
-  r.setProperty("--bg",claro?"#f6f6f3":"#111111");
-  r.setProperty("--card",claro?"#ffffff":"#1b1b1b");
-  r.setProperty("--line",claro?"#e2e2dd":"#2b2b2b");
+  r.setProperty("--bg",claro?"#f6f6f3":"#090909");
+  r.setProperty("--card",claro?"#ffffff":"#151515");
+  r.setProperty("--line",claro?"#deded8":"#2d2d2d");
   r.setProperty("--txt",claro?"#161616":"#f2f2f2");
   r.setProperty("--mut",claro?"#6b6b6b":"#9a9a9a");
   r.setProperty("--r",{reto:"3px",suave:"12px",redondo:"22px"}[cfg.cantos]);
