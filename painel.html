@@ -45,6 +45,10 @@
   .tabs button.on{background:var(--acc);color:#111;border-color:var(--acc)}
 
   /* marcações */
+  .modos{display:flex;gap:6px;margin-bottom:10px}
+  .modos button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--mut);border-radius:10px;padding:10px;cursor:pointer;font-weight:600}
+  .modos button.on{border-color:var(--acc);color:var(--acc)}
+  .dh{margin:16px 0 8px;font-size:.8rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc)}
   .dnav{display:flex;gap:6px;margin-bottom:10px}
   .dnav input{margin:0;flex:1}
   .dnav button{border:1px solid var(--line);background:var(--card);color:var(--txt);border-radius:10px;padding:0 14px;cursor:pointer}
@@ -152,7 +156,8 @@
 
     <!-- Marcações -->
     <div id="tMarc">
-      <div class="dnav"><button id="dPrev">◀</button><input type="date" id="dData"><button id="dNext">▶</button><button id="dHoje">Hoje</button></div>
+      <div class="modos"><button class="on" id="mProx">Próximas</button><button id="mDia">Por dia</button></div>
+      <div class="dnav" id="dnav" style="display:none"><button id="dPrev">◀</button><input type="date" id="dData"><button id="dNext">▶</button><button id="dHoje">Hoje</button></div>
       <div class="resumo" id="resumoDia"></div>
       <button class="add" id="novaM">＋ Nova marcação (telefone / presencial)</button>
       <div id="lista"></div>
@@ -284,7 +289,7 @@
 <script type="module">
 import { configurado, app, db, doc, getDoc, setDoc, updateDoc, getDocs, collection, query, where,
          onSnapshot, writeBatch, serverTimestamp } from "./firebase-config.js";
-import { $, esc, kz, hoje, iso, fmtData, hhmm, DIAS, DEFAULT, limpar, slugOk, waNum, novoId,
+import { $, esc, kz, hoje, iso, fmtData, dowDe, hhmm, DIAS, DEFAULT, limpar, slugOk, waNum, novoId,
          servicosAtivos, listaBarbeiros, gerarSlots, setOcupados } from "./core.js";
 import { criarMarcacao } from "./reservas.js";
 
@@ -316,7 +321,7 @@ const { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithE
         signOut, sendPasswordResetEmail } = await import(AUTH_URL);
 const auth=getAuth(app);
 
-let USER=null, NEG=[], atual=null, CFG=null, dia=hoje(), unsubM=null, LISTA=[], sujo=false;
+let USER=null, NEG=[], atual=null, CFG=null, dia=hoje(), modo="proximas", unsubM=null, LISTA=[], sujo=false;
 const BASE=location.href.split("#")[0].split("?")[0].replace(/painel(\.html)?$/,"");
 /* link com ?n= funciona em qualquer alojamento, sem regras de redirecionamento */
 const linkDe=s=>BASE+"?n="+s;
@@ -367,7 +372,7 @@ function selecionar(slug){
   $("hNeg").innerHTML=NEG.map(x=>`<option value="${esc(x.slug)}" ${x.slug===slug?"selected":""}>${esc(limpar(x.data.cfg).nome)}</option>`).join("");
   $("hLink").textContent=linkDe(slug); $("hAbrir").href=linkDe(slug);
   banner(); preencher(); mostrar("vApp");
-  dia=hoje(); $("dData").value=dia; ouvirDia();
+  dia=hoje(); $("dData").value=dia; setModo("proximas");
   document.querySelector('[data-tab="tMarc"]').click();
 }
 const banner=()=>{ $("hBanner").style.display=(CFG.whatsapp===DEFAULT.whatsapp||!CFG.whatsapp)?"block":"none"; };
@@ -412,33 +417,50 @@ document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{
 function ouvirDia(){
   if(unsubM){ unsubM(); unsubM=null; }
   $("lista").innerHTML='<div class="vazio">A carregar…</div>';
-  const s=atual;
-  unsubM=onSnapshot(query(collection(db,"negocios",s,"marcacoes"),where("data","==",dia)),
-    snap=>{ LISTA=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.inicio-b.inicio); pintarLista(); },
+  const col=collection(db,"negocios",atual,"marcacoes");
+  const q=modo==="proximas"?query(col,where("data",">=",hoje())):query(col,where("data","==",dia));
+  unsubM=onSnapshot(q,
+    snap=>{ LISTA=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>a.data.localeCompare(b.data)||a.inicio-b.inicio); pintarLista(); },
     e=>{ $("lista").innerHTML=`<div class="vazio">${esc(msgDb(e))}</div>`; });
 }
+function setModo(m){
+  modo=m;
+  $("mProx").classList.toggle("on",m==="proximas"); $("mDia").classList.toggle("on",m==="dia");
+  $("dnav").style.display=m==="dia"?"flex":"none";
+  ouvirDia();
+}
+$("mProx").onclick=()=>setModo("proximas");
+$("mDia").onclick=()=>setModo("dia");
 const ROT={pendente:"Pendente",confirmada:"Confirmada",concluida:"Concluída",cancelada:"Cancelada"};
+function cartao(m){
+  const tel=(m.telefone||"").trim();
+  const wa=tel?`https://wa.me/${waNum(tel)}?text=${encodeURIComponent(`Olá ${m.cliente}! A sua marcação na ${CFG.nome} para ${fmtData(m.data)} às ${m.hora} (${m.servico}) está confirmada ✅`)}`:"";
+  const acoes=[];
+  if(m.estado==="pendente") acoes.push(`<button class="p" data-a="confirmada" data-id="${esc(m.id)}">Confirmar</button>`);
+  if(m.estado==="confirmada") acoes.push(`<button class="p" data-a="concluida" data-id="${esc(m.id)}">Concluir</button>`);
+  if(wa&&(m.estado==="pendente"||m.estado==="confirmada")) acoes.push(`<a href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>`);
+  if(m.estado==="pendente"||m.estado==="confirmada") acoes.push(`<button class="x" data-a="cancelar" data-id="${esc(m.id)}">Cancelar</button>`);
+  return `<div class="mc ${esc(m.estado)}">
+    <div class="mh"><b>${esc(m.hora)} – ${hhmm(m.inicio+m.dur)}</b><span class="bd">${ROT[m.estado]||esc(m.estado)}</span></div>
+    <div class="mn">${esc(m.cliente)}${tel?` · <a href="tel:${esc(tel)}">${esc(tel)}</a>`:""}</div>
+    <div class="ms">${esc(m.servico)} · ${kz(m.preco)}${m.barbeiroNome?` · ${esc(m.barbeiroNome)}`:""}</div>
+    ${acoes.length?`<div class="ma">${acoes.join("")}</div>`:""}</div>`;
+}
 function pintarLista(){
-  const ativas=LISTA.filter(m=>m.estado!=="cancelada");
-  const pend=LISTA.filter(m=>m.estado==="pendente").length;
+  const prox=modo==="proximas";
+  const vis=prox?LISTA.filter(m=>m.estado==="pendente"||m.estado==="confirmada"):LISTA;
+  const ativas=vis.filter(m=>m.estado!=="cancelada");
+  const pend=vis.filter(m=>m.estado==="pendente").length;
   const prev=ativas.reduce((t,m)=>t+(+m.preco||0),0);
   $("resumoDia").innerHTML=`<div><b>${pend}</b>pendentes</div><div><b>${ativas.length}</b>marcações</div><div><b>${kz(prev)}</b>previsto</div>`;
   document.title=(pend?`(${pend}) `:"")+"Painel · Marcações";
-  if(!LISTA.length){ $("lista").innerHTML='<div class="vazio">Sem marcações neste dia.</div>'; return; }
-  $("lista").innerHTML=LISTA.map(m=>{
-    const tel=(m.telefone||"").trim();
-    const wa=tel?`https://wa.me/${waNum(tel)}?text=${encodeURIComponent(`Olá ${m.cliente}! A sua marcação na ${CFG.nome} para ${fmtData(m.data)} às ${m.hora} (${m.servico}) está confirmada ✅`)}`:"";
-    const acoes=[];
-    if(m.estado==="pendente") acoes.push(`<button class="p" data-a="confirmada" data-id="${esc(m.id)}">Confirmar</button>`);
-    if(m.estado==="confirmada") acoes.push(`<button class="p" data-a="concluida" data-id="${esc(m.id)}">Concluir</button>`);
-    if(wa&&(m.estado==="pendente"||m.estado==="confirmada")) acoes.push(`<a href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>`);
-    if(m.estado==="pendente"||m.estado==="confirmada") acoes.push(`<button class="x" data-a="cancelar" data-id="${esc(m.id)}">Cancelar</button>`);
-    return `<div class="mc ${esc(m.estado)}">
-      <div class="mh"><b>${esc(m.hora)} – ${hhmm(m.inicio+m.dur)}</b><span class="bd">${ROT[m.estado]||esc(m.estado)}</span></div>
-      <div class="mn">${esc(m.cliente)}${tel?` · <a href="tel:${esc(tel)}">${esc(tel)}</a>`:""}</div>
-      <div class="ms">${esc(m.servico)} · ${kz(m.preco)}${m.barbeiroNome?` · ${esc(m.barbeiroNome)}`:""}</div>
-      ${acoes.length?`<div class="ma">${acoes.join("")}</div>`:""}</div>`;
-  }).join("");
+  if(!vis.length){ $("lista").innerHTML=`<div class="vazio">${prox?"Sem marcações a chegar.":"Sem marcações neste dia."}</div>`; return; }
+  let html="", ult="";
+  vis.forEach(m=>{
+    if(prox && m.data!==ult){ ult=m.data; html+=`<div class="dh">${DIAS[dowDe(m.data)]} ${fmtData(m.data)}${m.data===hoje()?" · hoje":""}</div>`; }
+    html+=cartao(m);
+  });
+  $("lista").innerHTML=html;
 }
 $("lista").addEventListener("click",async e=>{
   const b=e.target.closest("button[data-a]"); if(!b) return;
@@ -455,7 +477,7 @@ $("lista").addEventListener("click",async e=>{
     }else await updateDoc(ref,{estado:b.dataset.a});
   }catch(err){ alert(msgDb(err)); b.disabled=false; }
 });
-const irDia=d=>{ dia=d; $("dData").value=d; ouvirDia(); };
+const irDia=d=>{ dia=d; $("dData").value=d; setModo("dia"); };
 $("dData").onchange=e=>{ if(e.target.value) irDia(e.target.value); };
 $("dHoje").onclick=()=>irDia(hoje());
 const mover=n=>{ const [y,m,d]=dia.split("-").map(Number); irDia(iso(new Date(y,m-1,d+n))); };
