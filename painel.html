@@ -12,7 +12,6 @@
   *{box-sizing:border-box}
   @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
   @keyframes breathe{0%,100%{box-shadow:0 8px 22px rgba(255,255,255,.06)}50%{box-shadow:0 10px 30px rgba(255,255,255,.14)}}
-  .ui-icon{width:16px;height:16px;display:inline-block;vertical-align:-3px;margin-right:6px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   button,a,summary,details{transition:transform .2s ease,background-color .2s ease,border-color .2s ease,color .2s ease,box-shadow .2s ease}
   .view.on{animation:rise .5s both}.box,.mc,.resumo div,details{animation:rise .5s both}
   .go:not(:disabled):hover{animation:breathe 1.8s ease-in-out infinite}
@@ -161,11 +160,11 @@
     <div class="brand-mini"><img src="./assets/logo-mark.png" alt="Marcações"><span>Marcações</span></div>
     <div class="top">
       <select id="hNeg"></select>
-      <button id="hNova" title="Adicionar barbearia"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+      <button id="hNova" title="Adicionar barbearia">Adicionar</button>
       <button id="hSair">Sair</button>
     </div>
     <div class="link"><span id="hLink"></span><button id="hCopiar">Copiar</button><a id="hAbrir" target="_blank" rel="noopener">Abrir</a></div>
-    <div class="banner" id="hBanner" style="display:none"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 2.5 20h19L12 3Z"></path><path d="M12 9v4M12 17h.01"></path></svg>Falta definir o número de WhatsApp da barbearia. Vá a <b>Personalizar → Contacto e redes</b>.</div>
+    <div class="banner" id="hBanner" style="display:none">Falta definir o número de WhatsApp da barbearia. Vá a <b>Personalizar → Contacto e redes</b>.</div>
 
     <div class="tabs">
       <button class="on" data-tab="tMarc">Marcações</button>
@@ -175,16 +174,16 @@
     <!-- Marcações -->
     <div id="tMarc">
       <div class="modos"><button class="on" id="mProx">Próximas</button><button id="mDia">Por dia</button></div>
-      <div class="dnav" id="dnav" style="display:none"><button id="dPrev"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button><input type="date" id="dData"><button id="dNext"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button><button id="dHoje">Hoje</button></div>
+      <div class="dnav" id="dnav" style="display:none"><button id="dPrev" aria-label="Dia anterior">Anterior</button><input type="date" id="dData"><button id="dNext" aria-label="Dia seguinte">Seguinte</button><button id="dHoje">Hoje</button></div>
       <div class="resumo" id="resumoDia"></div>
-      <button class="add" id="novaM"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Nova marcação (telefone / presencial)</button>
+      <button class="add" id="novaM">Nova marcação (telefone / presencial)</button>
       <div id="lista"></div>
     </div>
 
     <!-- Personalizar -->
     <div id="tPers" style="display:none">
       <details open>
-        <summary><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="13" cy="11" r="7"></circle><path d="M5 19c1-3 3-5 6-5M13 4v3M20 11h-3M13 18v3"></path></svg>Marca e aparência</summary>
+        <summary>Marca e aparência</summary>
         <div>
           <label>Nome da barbearia</label><input data-f="nome" maxlength="60">
           <label>Frase curta (subtítulo)</label><input data-f="sub" maxlength="100">
@@ -203,7 +202,7 @@
       </details>
 
       <details>
-        <summary><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 16.5v3a2 2 0 0 1-2.2 2 18.7 18.7 0 0 1-8.1-2.9 18.4 18.4 0 0 1-5.3-5.3A18.7 18.7 0 0 1 2.5 5.2 2 2 0 0 1 4.5 3h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.7a2 2 0 0 1-.4 2.1L8.5 10.8a16 16 0 0 0 4.7 4.7l1.3-1.3a2 2 0 0 1 2.1-.4c.8.3 1.7.6 2.7.7a2 2 0 0 1 1.7 2Z"></path></svg>Contacto e redes</summary>
+        <summary>Contacto e redes</summary>
         <div>
           <label>WhatsApp da barbearia (com indicativo, ex.: 244923000000)</label>
           <input data-f="whatsapp" data-t="digits" inputmode="numeric">
@@ -217,7 +216,7 @@
       </details>
 
       <details>
-        <summary><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>Horário e regras</summary>
+        <summary>Horário e regras</summary>
         <div>
           <label>Horário por dia</label>
           <div id="e_hor"></div>
@@ -241,7 +240,7 @@
       </details>
 
       <details>
-        <summary><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="6" r="2.5"></circle><circle cx="6" cy="18" r="2.5"></circle><path d="m8 7 12 5-12 5M8 7l12-5M8 17l12 5"></path></svg>Serviços</summary>
+        <summary>Serviços</summary>
         <div>
           <div id="e_serv"></div>
           <button class="add" id="addS">+ Adicionar serviço</button>
@@ -250,7 +249,7 @@
       </details>
 
       <details>
-        <summary><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3"></circle><path d="M3 21a6 6 0 0 1 12 0M17 11a3 3 0 1 0 0-6M17 14a5 5 0 0 1 4 5"></path></svg>Equipa</summary>
+        <summary>Equipa</summary>
         <div>
           <div id="e_barb"></div>
           <button class="add" id="addB">+ Adicionar barbeiro</button>
@@ -259,7 +258,7 @@
       </details>
 
       <details>
-        <summary><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H8l-4 4V5Z"></path><path d="M8 9h8M8 12h5"></path></svg>Mensagens e avisos</summary>
+        <summary>Mensagens e avisos</summary>
         <div>
           <label>Aviso no topo da página (opcional)</label>
           <textarea data-f="aviso" maxlength="200" placeholder="Ex.: Chegue 5 minutos antes da hora marcada."></textarea>
@@ -274,7 +273,7 @@
       </details>
 
       <details>
-        <summary><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v18H7zM9 7h6M9 11h6M9 15h4"></path></svg>Importar / exportar (JSON)</summary>
+        <summary>Importar / exportar (JSON)</summary>
         <div>
           <textarea id="e_json" placeholder="Cole aqui uma configuração para aplicar"></textarea>
           <div class="g2"><button class="sec" id="jImp" style="margin:0">Aplicar</button><button class="sec" id="jExp" style="margin:0">Copiar a atual</button></div>
@@ -557,7 +556,7 @@ function listas(){
   $("e_serv").innerHTML=CFG.servicos.map((s,i)=>`
     <div class="card">
       <div class="er"><input data-l="s" data-i="${i}" data-k="nome" value="${esc(s.nome)}" placeholder="Nome do serviço" maxlength="50">
-        <button class="rm" data-rm="s" data-i="${i}"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"></path></svg></button></div>
+        <button class="rm" aria-label="Remover serviço" data-rm="s" data-i="${i}">Remover</button></div>
       <input data-l="s" data-i="${i}" data-k="desc" value="${esc(s.desc)}" placeholder="Descrição curta (opcional)" maxlength="80">
       <div class="g3">
         <input data-l="s" data-i="${i}" data-k="min" type="number" value="${s.min}" min="15" max="180" step="15" title="Minutos">
@@ -568,12 +567,12 @@ function listas(){
   $("e_barb").innerHTML=CFG.barbeiros.map((b,i)=>`
     <div class="card">
       <div class="er"><input data-l="b" data-i="${i}" value="${esc(b.nome)}" placeholder="Nome do barbeiro" maxlength="40">
-        <button class="rm" data-rm="b" data-i="${i}"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"></path></svg></button></div>
+        <button class="rm" aria-label="Remover barbeiro" data-rm="b" data-i="${i}">Remover</button></div>
       <div class="folga">Folga:
         ${DIAS.map((n,d)=>`<label><input type="checkbox" data-bf="${i}" data-d="${d}" ${b.folgas.includes(d)?"checked":""}> ${n}</label>`).join("")}
       </div>
     </div>`).join("");
-  $("e_fech").innerHTML=CFG.fechados.map((f,i)=>`<span>${fmtData(f)}<button data-rmf="${i}"><svg class="ui-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"></path></svg></button></span>`).join("");
+  $("e_fech").innerHTML=CFG.fechados.map((f,i)=>`<span>${fmtData(f)}<button aria-label="Remover dia fechado" data-rmf="${i}">Remover</button></span>`).join("");
 }
 function preencher(){
   document.querySelectorAll("#tPers [data-f]").forEach(el=>el.value=CFG[el.dataset.f]??"");
