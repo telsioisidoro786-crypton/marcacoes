@@ -7,12 +7,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/fireba
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 export const firebaseConfig = {
-  apiKey: "COLE_AQUI",
-  authDomain: "COLE_AQUI.firebaseapp.com",
-  projectId: "COLE_AQUI",
-  storageBucket: "COLE_AQUI.appspot.com",
-  messagingSenderId: "COLE_AQUI",
-  appId: "COLE_AQUI"
+   apiKey: "AIzaSyA-7my3ETw4ewqBtHylaLVKfkS4VtFsc-Q",
+  authDomain: "marcacoes-42307.firebaseapp.com",
+  projectId: "marcacoes-42307",
+  storageBucket: "marcacoes-42307.firebasestorage.app",
+  messagingSenderId: "640118521080",
+  appId: "1:640118521080:web:e234b69bf40f5a4d494f0d"
 };
 
 export const configurado = !String(firebaseConfig.apiKey).startsWith("COLE");
