@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="pt-AO">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marcações</title>
+<style>
+  :root{--acc:#d4a24c;--bg:#111;--card:#1b1b1b;--line:#2b2b2b;--txt:#f2f2f2;--mut:#9a9a9a;--ok:#25d366;
+        --r:12px;--fh:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+        --sel:color-mix(in srgb,var(--acc) 16%,var(--bg))}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .wrap{max-width:480px;margin:0 auto;padding:16px 16px 130px;counter-reset:n}
+  .msg{max-width:480px;margin:0 auto;padding:60px 24px;text-align:center;color:var(--mut)}
+  .msg b{color:var(--txt);display:block;font-size:1.1rem;margin-bottom:8px}
+  .msg code{background:var(--card);padding:2px 6px;border-radius:6px}
+  #capa img{width:100%;height:130px;object-fit:cover;border-radius:var(--r);display:block}
+  header{text-align:center;padding:20px 0 8px}
+  #logo{width:72px;height:72px;margin:0 auto 10px;border-radius:50%;background:var(--card);border:2px solid var(--acc);display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden}
+  #logo img{width:100%;height:100%;object-fit:cover}
+  header h1{margin:0;font-size:1.45rem;letter-spacing:.5px;font-family:var(--fh)}
+  header p{margin:4px 0 0;color:var(--mut);font-size:.9rem}
+  #end{font-size:.85rem}
+  .acoes{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:12px}
+  .acoes a{color:var(--txt);text-decoration:none;font-size:.85rem;border:1px solid var(--line);background:var(--card);border-radius:20px;padding:7px 13px}
+  .aviso{margin-top:14px;padding:11px 14px;background:var(--sel);border-left:3px solid var(--acc);border-radius:calc(var(--r)*.6);font-size:.9rem;white-space:pre-line;text-align:left}
+  h2{font-size:.8rem;text-transform:uppercase;letter-spacing:1.5px;color:var(--acc);margin:24px 0 10px;font-family:var(--fh)}
+  h2::before{counter-increment:n;content:counter(n) " · "}
+  .opt{display:flex;justify-content:space-between;align-items:center;width:100%;background:var(--card);border:1px solid var(--line);color:var(--txt);border-radius:var(--r);padding:14px;margin-bottom:8px;font-size:1rem;text-align:left;cursor:pointer;font-family:inherit}
+  .opt small{color:var(--mut);display:block;margin-top:2px;font-size:.8rem}
+  .opt.sel{border-color:var(--acc);background:var(--sel)}
+  .price{color:var(--acc);font-weight:600;white-space:nowrap;margin-left:10px;text-align:right}
+  .price s{color:var(--mut);font-weight:400;font-size:.8rem;display:block}
+  .row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+  .chip{flex:0 0 auto;background:var(--card);border:1px solid var(--line);color:var(--txt);border-radius:calc(var(--r)*.8);padding:10px 14px;cursor:pointer;text-align:center;font-size:.95rem;min-width:64px;font-family:inherit}
+  .chip.sel{border-color:var(--acc);background:var(--sel)}
+  .chip:disabled{opacity:.3;text-decoration:line-through;cursor:not-allowed}
+  .chip b{display:block;font-size:1.05rem}
+  .slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .slots .chip{min-width:0;padding:10px 0}
+  input{width:100%;background:var(--card);border:1px solid var(--line);color:var(--txt);border-radius:calc(var(--r)*.8);padding:12px;font-size:1rem;margin-bottom:8px;font-family:inherit}
+  input:focus{outline:none;border-color:var(--acc)}
+  .nota{margin-top:10px;padding:12px 14px;background:var(--card);border:1px solid var(--line);border-radius:var(--r);font-size:.85rem;color:var(--mut);white-space:pre-line}
+  .nota b{color:var(--txt);display:block;margin-bottom:3px;font-size:.8rem;text-transform:uppercase;letter-spacing:1px}
+  .bar{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);padding:12px 16px;z-index:4}
+  .bar>div{max-width:480px;margin:0 auto}
+  .sum{color:var(--mut);font-size:.85rem;margin-bottom:8px;min-height:1.2em}
+  .go{display:block;width:100%;border:0;border-radius:var(--r);padding:15px;font-size:1rem;font-weight:700;background:var(--ok);color:#06210f;cursor:pointer;text-align:center;text-decoration:none;font-family:inherit}
+  .go:disabled{background:var(--line);color:var(--mut);cursor:not-allowed}
+  .sec{display:block;width:100%;border:1px solid var(--line);border-radius:var(--r);padding:13px;font-size:.95rem;background:var(--card);color:var(--txt);cursor:pointer;margin-top:10px;text-align:center;text-decoration:none;font-family:inherit}
+  .empty{color:var(--mut);font-size:.9rem;grid-column:1/-1}
+  .erro{background:#3a1616;border:1px solid #7a2a2a;color:#ffb4b4;border-radius:var(--r);padding:11px 14px;font-size:.88rem;margin-bottom:10px;display:none}
+  .done{max-width:480px;margin:0 auto;padding:40px 20px;text-align:center}
+  .done .tick{width:68px;height:68px;border-radius:50%;background:var(--ok);color:#06210f;font-size:2.2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+  .done h1{margin:0 0 6px;font-family:var(--fh)}
+  .done .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:18px 0;text-align:left;line-height:1.7;font-size:.95rem}
+  .done p{color:var(--mut);font-size:.9rem}
+</style>
+</head>
+<body>
+
+<div id="estado" class="msg"><b>A carregar…</b></div>
+
+<div id="app" style="display:none">
+  <div class="wrap">
+    <div id="capa"></div>
+    <header>
+      <div id="logo"></div>
+      <h1 id="nome"></h1>
+      <p id="sub"></p>
+      <p id="end"></p>
+      <div class="acoes" id="acoes"></div>
+      <div class="aviso" id="aviso" style="display:none"></div>
+    </header>
+
+    <h2>Serviço</h2>
+    <div id="servicos"></div>
+
+    <div id="secB">
+      <h2>Barbeiro</h2>
+      <div id="barbeiros" class="row"></div>
+    </div>
+
+    <h2>Dia</h2>
+    <div id="dias" class="row"></div>
+
+    <h2>Hora</h2>
+    <div id="horas" class="slots"></div>
+
+    <h2>Os seus dados</h2>
+    <input id="cliente" placeholder="O seu nome" autocomplete="name" maxlength="60">
+    <input id="tel" placeholder="O seu telemóvel" inputmode="tel" autocomplete="tel" maxlength="25">
+
+    <div id="notas"></div>
+  </div>
+
+  <div class="bar"><div>
+    <div class="erro" id="erro"></div>
+    <div class="sum" id="resumo"></div>
+    <button class="go" id="enviar" disabled>Confirmar marcação</button>
+  </div></div>
+</div>
+
+<div id="feito" class="done" style="display:none">
+  <div class="tick">✓</div>
+  <h1>Marcação registada!</h1>
+  <p id="fNome"></p>
+  <div class="card" id="fResumo"></div>
+  <a class="go" id="fWa" target="_blank" rel="noopener">Avisar a barbearia por WhatsApp</a>
+  <button class="sec" id="fOutra">Fazer outra marcação</button>
+  <p>A barbearia vai ver a sua marcação e confirmar. Se precisar de mudar, contacte-nos pelo WhatsApp.</p>
+</div>
+
+<script type="module">
+import { configurado, db, doc, getDoc, collection, query, where, onSnapshot } from "./firebase-config.js";
+import { $, esc, kz, iso, hoje, fmtData, dowDe, DIAS, limpar, aplicarTema, social, final,
+         servicosAtivos, listaBarbeiros, trabalhaDia, proximosDias, gerarSlots, setOcupados,
+         montarMsg, slugOk } from "./core.js";
+import { criarMarcacao } from "./reservas.js";
+
+/* ---------- que barbearia é? (/slug  ou  ?n=slug) ---------- */
+const params = new URLSearchParams(location.search);
+let slug = (params.get("n") || location.pathname.split("/").filter(Boolean)[0] || "").replace(/\.html$/,"").toLowerCase();
+
+const aviso = (t,sub) => { $("estado").innerHTML=`<b>${t}</b>${sub||""}`; $("estado").style.display=""; $("app").style.display="none"; };
+
+let cfg=null, OC=new Set(), unsub=null;
+const S = { servico:null, barbeiro:null, dia:null, hora:null };
+
+async function iniciar(){
+  if(!configurado) return aviso("Firebase por configurar","Edite <code>firebase-config.js</code> e cole os dados do seu projeto.");
+  if(!slugOk(slug)) return aviso("Abra o link da sua barbearia","Falta o nome da barbearia no endereço.");
+  try{
+    const snap = await getDoc(doc(db,"negocios",slug));
+    if(!snap.exists()) return aviso("Barbearia não encontrada","Confirme o link com a barbearia.");
+    cfg = limpar(snap.data().cfg);
+  }catch(e){
+    return aviso("Não foi possível carregar","Verifique a ligação à internet e tente de novo.");
+  }
+  $("estado").style.display="none"; $("app").style.display="";
+  render();
+}
+
+/* ---------- horários ocupados em tempo real para o dia escolhido ---------- */
+function ouvirDia(){
+  if(unsub){ unsub(); unsub=null; }
+  OC=new Set(); if(!S.dia) return;
+  unsub=onSnapshot(query(collection(db,"negocios",slug,"ocupados"),where("data","==",S.dia)),
+    snap=>{ OC=setOcupados(snap); render(); },
+    ()=>{ OC=new Set(); render(); });
+}
+
+/* ---------- ecrã ---------- */
+function render(){
+  aplicarTema(cfg);
+  const sv=servicosAtivos(cfg), bs=listaBarbeiros(cfg), dsp=proximosDias(cfg);
+
+  if(S.servico) S.servico=sv.find(x=>x.id===S.servico.id)||null;
+  if(!bs.find(b=>b.id===S.barbeiro)) S.barbeiro=bs[0]?bs[0].id:null;
+  if(S.dia){
+    const dd=dsp.find(d=>iso(d)===S.dia);
+    if(!dd || !trabalhaDia(cfg,S.barbeiro,dd.getDay())){ S.dia=null; S.hora=null; ouvirDia(); }
+  }
+  const hs=S.dia?gerarSlots(cfg,S.dia,S.servico?S.servico.min:cfg.passo,S.barbeiro,OC):[];
+  if(S.hora && !hs.find(x=>x.h===S.hora&&x.livre)) S.hora=null;
+
+  $("capa").innerHTML=cfg.capa?`<img src="${esc(cfg.capa)}" alt="" onerror="this.remove()">`:"";
+  $("logo").innerHTML=cfg.logo?`<img src="${esc(cfg.logo)}" alt="" onerror="this.parentNode.textContent='✂️'">`:"✂️";
+  $("nome").textContent=cfg.nome; $("sub").textContent=cfg.sub;
+  $("end").textContent=cfg.endereco?"📍 "+cfg.endereco:"";
+
+  const ig=social(cfg.instagram,"https://instagram.com/"), fb=social(cfg.facebook,"https://facebook.com/");
+  const ac=[];
+  if(cfg.telefone) ac.push(`<a href="tel:${esc(cfg.telefone)}">📞 Ligar</a>`);
+  if(cfg.maps) ac.push(`<a href="${esc(cfg.maps)}" target="_blank" rel="noopener">🗺️ Como chegar</a>`);
+  if(ig) ac.push(`<a href="${esc(ig)}" target="_blank" rel="noopener">Instagram</a>`);
+  if(fb) ac.push(`<a href="${esc(fb)}" target="_blank" rel="noopener">Facebook</a>`);
+  $("acoes").innerHTML=ac.join("");
+  $("aviso").style.display=cfg.aviso.trim()?"":"none"; $("aviso").textContent=cfg.aviso;
+
+  $("servicos").innerHTML=sv.map(s=>{
+    const f=final(s), promo=f<s.preco;
+    return `<button class="opt ${S.servico&&S.servico.id===s.id?"sel":""}" data-s="${s.id}">
+      <span>${esc(s.nome)}<small>${s.min} min${s.desc?" · "+esc(s.desc):""}</small></span>
+      <span class="price">${promo?`<s>${kz(s.preco)}</s>`:""}${kz(f)}</span></button>`;
+  }).join("")||'<div class="empty">Sem serviços definidos.</div>';
+
+  $("secB").style.display=bs.length>1?"":"none";
+  $("barbeiros").innerHTML=bs.map(b=>`<button class="chip ${S.barbeiro===b.id?"sel":""}" data-b="${esc(b.id)}">${esc(b.nome)}</button>`).join("");
+
+  $("dias").innerHTML=dsp.map(d=>`
+    <button class="chip ${S.dia===iso(d)?"sel":""}" data-d="${iso(d)}" ${trabalhaDia(cfg,S.barbeiro,d.getDay())?"":"disabled"}>${DIAS[d.getDay()]}<b>${d.getDate()}</b></button>`).join("")
+    ||'<div class="empty">Sem dias disponíveis.</div>';
+
+  $("horas").innerHTML=!S.dia?'<div class="empty">Escolha primeiro o dia.</div>'
+    :hs.length?hs.map(x=>`<button class="chip ${S.hora===x.h?"sel":""}" data-h="${x.h}" ${x.livre?"":"disabled"}>${x.h}</button>`).join("")
+    :'<div class="empty">Sem horários para este serviço.</div>';
+
+  const notas=[];
+  if(cfg.pagamento.trim()) notas.push(`<div class="nota"><b>Pagamento</b>${esc(cfg.pagamento)}</div>`);
+  if(cfg.politica.trim()) notas.push(`<div class="nota"><b>Cancelamento</b>${esc(cfg.politica)}</div>`);
+  $("notas").innerHTML=notas.join("");
+
+  barra();
+}
+function barra(){
+  const ok=S.servico&&S.dia&&S.hora&&$("cliente").value.trim()&&$("tel").value.trim();
+  if(!sending) $("enviar").disabled=!ok;
+  $("resumo").textContent=S.servico
+    ?`${S.servico.nome} · ${kz(final(S.servico))}`+(S.dia&&S.hora?` · ${fmtData(S.dia)} às ${S.hora}`:"")
+    :"Escolha um serviço para começar";
+}
+
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button"); if(!t) return;
+  if(t.dataset.s){ S.servico=servicosAtivos(cfg).find(s=>s.id===t.dataset.s); S.hora=null; }
+  else if(t.dataset.b){ S.barbeiro=t.dataset.b; S.hora=null; }
+  else if(t.dataset.d){ if(S.dia!==t.dataset.d){ S.dia=t.dataset.d; S.hora=null; ouvirDia(); } }
+  else if(t.dataset.h){ S.hora=t.dataset.h; }
+  else return;
+  render();
+});
+$("cliente").addEventListener("input",barra);
+$("tel").addEventListener("input",barra);
+
+/* ---------- confirmar ---------- */
+let sending=false;
+const erro=t=>{ $("erro").textContent=t; $("erro").style.display=t?"block":"none"; };
+
+$("enviar").addEventListener("click",async()=>{
+  if(sending) return;
+  sending=true; erro(""); $("enviar").disabled=true; $("enviar").textContent="A guardar…";
+  const p={dia:S.dia,hora:S.hora,servico:S.servico,barbeiro:S.barbeiro,
+           cliente:$("cliente").value.trim(),telefone:$("tel").value.trim()};
+  try{
+    const r=await criarMarcacao(slug,cfg,OC,p);
+    const v={negocio:cfg.nome,servico:p.servico.nome,preco:kz(final(p.servico)),
+             barbeiro:r.barbeiro.nome||"Sem preferência",data:fmtData(p.dia),hora:p.hora,
+             nome:p.cliente,contacto:p.telefone||"—"};
+    $("app").style.display="none";
+    $("fNome").textContent=`Obrigado, ${p.cliente}.`;
+    $("fResumo").innerHTML=`<b>${esc(cfg.nome)}</b><br>✂️ ${esc(v.servico)} · ${esc(v.preco)}<br>`
+      +(r.barbeiro.nome?`👤 ${esc(r.barbeiro.nome)}<br>`:"")+`📅 ${v.data} às ${v.hora}`;
+    $("fWa").href=`https://wa.me/${cfg.whatsapp}?text=${encodeURIComponent(montarMsg(cfg.msg,v))}`;
+    $("feito").style.display="";
+    scrollTo(0,0);
+  }catch(e){
+    erro(e.code==="ocupado"||e.code==="permission-denied"||e.code==="already-exists"
+      ? "Este horário acabou de ser ocupado. Escolha outro."
+      : "Não foi possível guardar. Verifique a internet e tente de novo.");
+    S.hora=null; ouvirDia(); render();
+  }finally{
+    sending=false; $("enviar").textContent="Confirmar marcação"; barra();
+  }
+});
+$("fOutra").addEventListener("click",()=>location.reload());
+
+iniciar();
+</script>
+</body>
+</html>
