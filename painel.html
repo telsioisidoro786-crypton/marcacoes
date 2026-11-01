@@ -71,6 +71,11 @@
   .resumo{display:flex;gap:8px;margin-bottom:10px}
   .resumo div{flex:1;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px;text-align:center;font-size:.78rem;color:var(--mut)}
   .resumo b{display:block;color:var(--txt);font-size:1.05rem}
+  .stats-panel{background:linear-gradient(145deg,#181818,#111);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin:12px 0 16px;box-shadow:0 14px 30px rgba(0,0,0,.14)}
+  .stats-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.stats-head h3{margin:2px 0 0;font:800 1rem var(--fh)}.stats-head small{color:var(--mut);font-size:.72rem}.stats-label{text-transform:uppercase;letter-spacing:1.4px;color:var(--mut);font-size:.68rem}
+  .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px}.stat-card{background:#202020;border:1px solid #303030;border-radius:11px;padding:10px 8px}.stat-card b{display:block;font:800 1.15rem var(--fh);color:var(--txt)}.stat-card span{display:block;color:var(--mut);font-size:.68rem;margin-top:3px}
+  .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.chart-card{background:#141414;border:1px solid #2b2b2b;border-radius:11px;padding:11px;min-width:0}.chart-card h4{font-size:.74rem;margin:0 0 10px;color:#ddd}.bar-row{display:grid;grid-template-columns:62px 1fr 24px;align-items:center;gap:6px;margin:7px 0;font-size:.68rem;color:var(--mut)}.bar-track{height:7px;background:#292929;border-radius:8px;overflow:hidden}.bar-fill{height:100%;min-width:2px;background:#f5f5f5;border-radius:8px;transition:width .45s ease}.bar-row b{font-size:.7rem;color:var(--txt);text-align:right}.daily-chart{height:104px;display:flex;align-items:flex-end;justify-content:space-between;gap:5px}.day-col{height:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;color:var(--mut);font-size:.61rem}.day-col b{font-size:.65rem;color:var(--txt)}.day-bar{width:100%;max-width:22px;min-height:3px;background:linear-gradient(180deg,#f5f5f5,#6c6c6c);border-radius:5px 5px 2px 2px;transition:height .45s ease}.chart-empty{color:var(--mut);font-size:.72rem;padding:16px 0;text-align:center}
+  @media (max-width:460px){.stat-grid{grid-template-columns:repeat(2,1fr)}.chart-grid{grid-template-columns:1fr}.stats-panel{padding:12px}}
   .mc{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:var(--r);padding:12px 14px;margin-bottom:10px}
   .mc.confirmada{border-left-color:#f5f5f5}
   .mc.concluida{border-left-color:#8a8a8a;opacity:.8}
@@ -188,6 +193,12 @@
       <div class="modos"><button class="on" id="mProx">Próximas</button><button id="mDia">Por dia</button></div>
       <div class="dnav" id="dnav" style="display:none"><button id="dPrev" aria-label="Dia anterior">Anterior</button><input type="date" id="dData"><button id="dNext" aria-label="Dia seguinte">Seguinte</button><button id="dHoje">Hoje</button></div>
       <div class="resumo" id="resumoDia"></div>
+      <section class="stats-panel" id="statsPanel" aria-label="Estatísticas de agendamentos">
+        <div class="stats-head"><div><span class="stats-label">Visão geral</span><h3>Desempenho dos agendamentos</h3></div><small id="statsRange">Vista actual</small></div>
+        <div class="stat-grid" id="statsCards"></div>
+        <div class="chart-grid"><div class="chart-card"><h4>Por estado</h4><div id="statusChart"></div></div><div class="chart-card"><h4>Próximos 7 dias</h4><div id="dailyChart" class="daily-chart"></div></div></div>
+        <div class="chart-card" style="margin-top:8px"><h4>Serviços mais marcados</h4><div id="serviceChart"></div></div>
+      </section>
       <button class="add" id="novaM">Nova marcação (telefone / presencial)</button>
       <div id="lista"></div>
     </div>
@@ -484,6 +495,21 @@ function cartao(m){
     <div class="ms">${esc(m.servico)} · ${kz(m.preco)}${m.barbeiroNome?` · ${esc(m.barbeiroNome)}`:""}</div>
     ${acoes.length?`<div class="ma">${acoes.join("")}</div>`:""}</div>`;
 }
+function pintarStats(){
+  const all=LISTA||[], total=all.length, pend=all.filter(m=>m.estado==="pendente").length, conf=all.filter(m=>m.estado==="confirmada").length, conc=all.filter(m=>m.estado==="concluida").length, canc=all.filter(m=>m.estado==="cancelada").length;
+  const receita=all.filter(m=>m.estado!=="cancelada").reduce((t,m)=>t+(+m.preco||0),0);
+  $("statsRange").textContent=modo==="proximas"?"Próximas marcações":"Dia seleccionado";
+  $("statsCards").innerHTML=`<div class="stat-card"><b>${total}</b><span>total</span></div><div class="stat-card"><b>${pend}</b><span>pendentes</span></div><div class="stat-card"><b>${conf+conc}</b><span>confirmadas</span></div><div class="stat-card"><b>${kz(receita)}</b><span>receita prevista</span></div>`;
+  const estados=[["Pendente",pend],["Confirmada",conf],["Concluída",conc],["Cancelada",canc]], maxEstado=Math.max(1,...estados.map(x=>x[1]));
+  $("statusChart").innerHTML=estados.map(([nome,n])=>`<div class="bar-row"><span>${nome}</span><div class="bar-track"><div class="bar-fill" style="width:${n/maxEstado*100}%"></div></div><b>${n}</b></div>`).join("");
+  const hojeD=new Date(), dias=[];
+  for(let i=0;i<7;i++){ const d=new Date(hojeD.getFullYear(),hojeD.getMonth(),hojeD.getDate()+i), data=iso(d), n=all.filter(x=>x.data===data&&x.estado!=="cancelada").length; dias.push({data,n,label:i===0?"Hoje":`${String(d.getDate()).padStart(2,"0")}/${String(d.getMonth()+1).padStart(2,"0")}`}); }
+  const maxDia=Math.max(1,...dias.map(x=>x.n));
+  $("dailyChart").innerHTML=dias.map(x=>`<div class="day-col" title="${x.data}: ${x.n} marcações"><b>${x.n}</b><div class="day-bar" style="height:${Math.max(4,x.n/maxDia*78)}%"></div><span>${x.label}</span></div>`).join("");
+  const serv=new Map(); all.filter(m=>m.estado!=="cancelada").forEach(m=>serv.set(m.servico,(serv.get(m.servico)||0)+1));
+  const top=[...serv.entries()].sort((a,b)=>b[1]-a[1]).slice(0,4), maxServ=Math.max(1,...top.map(x=>x[1]));
+  $("serviceChart").innerHTML=top.length?top.map(([nome,n])=>`<div class="bar-row"><span title="${esc(nome)}">${esc(nome).slice(0,10)}</span><div class="bar-track"><div class="bar-fill" style="width:${n/maxServ*100}%"></div></div><b>${n}</b></div>`).join(""):'<div class="chart-empty">Ainda não há dados de serviços.</div>';
+}
 function pintarLista(){
   const prox=modo==="proximas";
   const vis=prox?LISTA.filter(m=>m.estado==="pendente"||m.estado==="confirmada"):LISTA;
@@ -491,6 +517,7 @@ function pintarLista(){
   const pend=vis.filter(m=>m.estado==="pendente").length;
   const prev=ativas.reduce((t,m)=>t+(+m.preco||0),0);
   $("resumoDia").innerHTML=`<div><b>${pend}</b>pendentes</div><div><b>${ativas.length}</b>marcações</div><div><b>${kz(prev)}</b>previsto</div>`;
+  pintarStats();
   document.title=(pend?`(${pend}) `:"")+"Painel · Marcações";
   if(!vis.length){ $("lista").innerHTML=`<div class="vazio">${prox?"Sem marcações a chegar.":"Sem marcações neste dia."}</div>`; return; }
   let html="", ult="";

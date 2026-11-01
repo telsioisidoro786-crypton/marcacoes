@@ -105,6 +105,10 @@
   .sec{background:#151515;border-color:#363636}
   .done{padding-top:60px}
   .done .tick{box-shadow:0 12px 30px rgba(255,255,255,.12)}
+  .identity-kicker{margin:0 0 6px;color:#777;text-transform:uppercase;letter-spacing:.2em;font-size:.64rem;font-weight:800}
+  .hero-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0 0;text-align:left}.info-card{min-height:58px;background:rgba(25,25,25,.78);border:1px solid #343434;border-radius:14px;padding:11px 12px;color:#d9d9d9;font-size:.78rem;line-height:1.35}.info-card strong{display:block;color:#777;text-transform:uppercase;letter-spacing:.12em;font-size:.6rem;margin-bottom:4px}.info-card p{margin:0}.info-card.muted{color:var(--mut)}
+  .section-lead{margin:-5px 0 10px;color:var(--mut);font-size:.78rem}.service-copy{display:flex;flex-direction:column;gap:4px;min-width:0}.service-name{font-family:var(--fh);font-weight:800;font-size:1rem}.service-meta{font-size:.75rem;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.price small{display:block;color:var(--mut);font:500 .63rem var(--fb);text-transform:uppercase;letter-spacing:.08em}.barber-chip{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:120px;text-align:left}.barber-chip .chip-sub{font-size:.68rem;color:var(--mut)}.barber-chip.sel .chip-sub{color:#555}.form-card{background:linear-gradient(145deg,#181818,#121212);border:1px solid #333;border-radius:18px;padding:14px;margin-top:4px}.form-card label{display:block;margin:0 0 6px;color:#ddd;font-size:.78rem;font-weight:700}.form-card input+label{margin-top:10px}.form-hint{margin:10px 0 0;color:var(--mut);font-size:.72rem;line-height:1.4}
+  @media (max-width:390px){.hero-meta{grid-template-columns:1fr}.slots{grid-template-columns:repeat(3,1fr)}}
 </style>
 </head>
 <body>
@@ -117,18 +121,21 @@
     <header>
       <div class="brand"><img src="./assets/logo-mark.png" alt="Marcações"><span>Marcações</span></div>
       <div id="logo"></div>
+      <p class="identity-kicker">Agenda online</p>
       <h1 id="nome"></h1>
       <p id="sub"></p>
-      <p id="end"></p>
+      <div class="hero-meta"><div class="info-card"><strong>Localização</strong><p id="end"></p></div><div class="info-card muted"><strong>Experiência</strong><p>Marca antes de ir, para facilitar a organização.</p></div></div>
       <div class="acoes" id="acoes"></div>
       <div class="aviso" id="aviso" style="display:none"></div>
     </header>
 
     <h2>Serviço</h2>
+    <p class="section-lead">Escolha o serviço que pretende realizar.</p>
     <div id="servicos"></div>
 
     <div id="secB">
-      <h2>Barbeiro</h2>
+    <h2>Barbeiro</h2>
+      <p class="section-lead">Selecione um profissional ou deixe a equipa escolher.</p>
       <div id="barbeiros" class="row"></div>
     </div>
 
@@ -139,8 +146,7 @@
     <div id="horas" class="slots"></div>
 
     <h2>Os seus dados</h2>
-    <input id="cliente" placeholder="O seu nome" autocomplete="name" maxlength="60">
-    <input id="tel" placeholder="O seu telemóvel" inputmode="tel" autocomplete="tel" maxlength="25">
+    <div class="form-card"><label for="cliente">Nome completo</label><input id="cliente" placeholder="Como devemos chamar-lhe?" autocomplete="name" maxlength="60"><label for="tel">Número de telemóvel</label><input id="tel" placeholder="Ex.: 923 000 000" inputmode="tel" autocomplete="tel" maxlength="25"><p class="form-hint">Usaremos o contacto apenas para associar a marcação e facilitar a confirmação.</p></div>
 
     <div id="notas"></div>
   </div>
@@ -235,12 +241,12 @@ function render(){
   $("servicos").innerHTML=sv.map(s=>{
     const f=final(s), promo=f<s.preco;
     return `<button class="opt ${S.servico&&S.servico.id===s.id?"sel":""}" data-s="${s.id}">
-      <span>${esc(s.nome)}<small>${s.min} min${s.desc?" · "+esc(s.desc):""}</small></span>
-      <span class="price">${promo?`<s>${kz(s.preco)}</s>`:""}${kz(f)}</span></button>`;
+      <span class="service-copy"><span class="service-name">${esc(s.nome)}</span><span class="service-meta">${s.min} min${s.desc?" · "+esc(s.desc):""}</span></span>
+      <span class="price"><small>${promo?"promoção":"a partir de"}</small>${promo?`<s>${kz(s.preco)}</s>`:""}${kz(f)}</span></button>`;
   }).join("")||'<div class="empty">Sem serviços definidos.</div>';
 
   $("secB").style.display=bs.length>1?"":"none";
-  $("barbeiros").innerHTML=bs.map(b=>`<button class="chip ${S.barbeiro===b.id?"sel":""}" data-b="${esc(b.id)}">${esc(b.nome)}</button>`).join("");
+  $("barbeiros").innerHTML=bs.map(b=>`<button class="chip barber-chip ${S.barbeiro===b.id?"sel":""}" data-b="${esc(b.id)}"><span>${esc(b.nome)}</span><span class="chip-sub">${b.id==="qq"?"Disponível para todos os serviços":"Profissional"}</span></button>`).join("");
 
   $("dias").innerHTML=dsp.map(d=>`
     <button class="chip ${S.dia===iso(d)?"sel":""}" data-d="${iso(d)}" ${trabalhaDia(cfg,S.barbeiro,d.getDay())?"":"disabled"}>${DIAS[d.getDay()]}<b>${d.getDate()}</b></button>`).join("")
