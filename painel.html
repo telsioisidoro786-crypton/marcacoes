@@ -117,9 +117,21 @@
   .tags span{background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:5px 5px 5px 12px;font-size:.82rem;display:flex;align-items:center;gap:6px}
   .tags button{border:0;background:transparent;color:var(--mut);cursor:pointer;font-size:.9rem}
   .salvar{position:sticky;bottom:0;background:var(--bg);padding:12px 0 4px;border-top:1px solid var(--line);margin-top:14px}
+  .toast-region{position:fixed;right:18px;bottom:18px;z-index:100;display:flex;flex-direction:column;gap:10px;width:min(380px,calc(100vw - 36px));pointer-events:none}
+  .toast{display:grid;grid-template-columns:10px 1fr auto;align-items:center;gap:11px;background:rgba(24,24,24,.96);border:1px solid #484848;border-left:3px solid #f5f5f5;border-radius:14px;padding:13px 12px;box-shadow:0 18px 44px rgba(0,0,0,.38);color:var(--txt);font-size:.86rem;line-height:1.4;opacity:0;transform:translateY(14px) scale(.98);transition:opacity .25s ease,transform .25s ease;pointer-events:auto}
+  .toast.on{opacity:1;transform:translateY(0) scale(1)}
+  .toast.success{border-left-color:#f5f5f5}.toast.error{border-left-color:#ef6b70}.toast.warning{border-left-color:#bdbdbd}.toast.info{border-left-color:#777}
+  .toast-dot{width:8px;height:8px;border-radius:50%;background:#f5f5f5;box-shadow:0 0 0 4px rgba(255,255,255,.08)}
+  .toast.error .toast-dot{background:#ef6b70;box-shadow:0 0 0 4px rgba(239,107,112,.12)}
+  .toast.warning .toast-dot{background:#bdbdbd}.toast.info .toast-dot{background:#777}
+  .toast-close{border:0;background:transparent;color:var(--mut);font-size:1.1rem;line-height:1;cursor:pointer;padding:3px 2px}
+  .toast-close:hover{color:var(--txt);transform:scale(1.08)}
+  @media (max-width:560px){.toast-region{right:12px;bottom:12px;width:calc(100vw - 24px)}}
+  @media (prefers-reduced-motion:reduce){.toast{transition:none;transform:none;opacity:1}.toast.on{transform:none}}
 </style>
 </head>
 <body>
+<div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="false"></div>
 <div class="w">
 
   <div id="aviso" class="view"><div class="box"><b>Firebase por configurar</b>
@@ -315,6 +327,14 @@ const mostrar=id=>views.forEach(v=>$(v).classList.toggle("on",v===id));
 const lsGet=()=>{ try{return localStorage.getItem("painel_slug");}catch(e){return null;} };
 const lsSet=v=>{ try{localStorage.setItem("painel_slug",v);}catch(e){} };
 const msg=(el,t)=>{ el.textContent=t||""; el.style.display=t?"block":"none"; };
+const toast=(text,type="info",duration=3800)=>{
+  const region=$("toastRegion"); if(!region||!text) return;
+  const el=document.createElement("div"); el.className=`toast ${type}`; el.setAttribute("role",type==="error"?"alert":"status");
+  el.innerHTML=`<span class="toast-dot" aria-hidden="true"></span><span>${esc(text)}</span><button class="toast-close" type="button" aria-label="Fechar aviso">×</button>`;
+  const close=()=>{ el.classList.remove("on"); setTimeout(()=>el.remove(),260); };
+  el.querySelector(".toast-close").onclick=close; region.append(el); requestAnimationFrame(()=>el.classList.add("on"));
+  if(duration>0) setTimeout(close,duration);
+};
 const msgDb=e=>({
   "permission-denied":"Sem permissão. Já publicou as regras do Firestore (ficheiro firestore.rules)?",
   "unavailable":"Sem ligação à internet. Tente de novo.",
@@ -357,8 +377,8 @@ $("lConta").onclick=async()=>{
 $("lReset").onclick=async()=>{
   msg($("lErr"),""); msg($("lOk"),"");
   const em=$("lEmail").value.trim(); if(!em) return msg($("lErr"),"Escreva o seu email primeiro.");
-  try{ await sendPasswordResetEmail(auth,em); msg($("lOk"),"Enviámos um email para repor a palavra-passe."); }
-  catch(e){ msg($("lErr"),msgDb(e)); }
+  try{ await sendPasswordResetEmail(auth,em); msg($("lOk"),"Enviámos um email para repor a palavra-passe."); toast("Email de recuperação enviado.","success"); }
+  catch(e){ msg($("lErr"),msgDb(e)); toast(msgDb(e),"error"); }
 };
 $("lSenha").addEventListener("keydown",e=>{ if(e.key==="Enter") $("lEntrar").click(); });
 const sair=()=>{ lsSet(""); signOut(auth); };
@@ -399,8 +419,8 @@ $("cnCancel").onclick=()=>mostrar("vApp");
 $("hCopiar").onclick=e=>{
   const b=e.currentTarget, t=b.textContent;
   (navigator.clipboard?navigator.clipboard.writeText(linkDe(atual)):Promise.reject())
-    .then(()=>{ b.textContent="Copiado"; setTimeout(()=>b.textContent=t,1600); })
-    .catch(()=>prompt("Copie o link:",linkDe(atual)));
+    .then(()=>{ b.textContent="Copiado"; toast("Link copiado para a área de transferência.","success"); setTimeout(()=>b.textContent=t,1600); })
+    .catch(()=>{ toast("Não foi possível copiar automaticamente o link.","warning"); prompt("Copie o link:",linkDe(atual)); });
 };
 
 const slugify=s=>s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+/,"").slice(0,40);
@@ -419,7 +439,8 @@ $("cnOk").onclick=async()=>{
     await setDoc(doc(db,"negocios",s),{donoUid:USER.uid,cfg:limpar({nome}),criadoEm:serverTimestamp(),atualizadoEm:serverTimestamp()});
     slugManual=false;
     await carregarNegocios(s);
-  }catch(e){ msg($("cnErr"),msgDb(e)); }
+    toast(`A barbearia “${nome}” foi criada com sucesso.`,"success");
+  }catch(e){ msg($("cnErr"),msgDb(e)); toast(msgDb(e),"error"); }
   finally{ $("cnOk").disabled=false; }
 };
 
@@ -491,8 +512,12 @@ $("lista").addEventListener("click",async e=>{
       batch.update(ref,{estado:"cancelada"});
       (m.celulas||[]).forEach(id=>batch.delete(doc(db,"negocios",atual,"ocupados",id)));
       await batch.commit();
-    }else await updateDoc(ref,{estado:b.dataset.a});
-  }catch(err){ alert(msgDb(err)); b.disabled=false; }
+      toast(`Marcação de ${m.cliente} cancelada. O horário está novamente livre.`,"success");
+    }else{
+      await updateDoc(ref,{estado:b.dataset.a});
+      toast(`${m.cliente}: marcação ${ROT[b.dataset.a].toLowerCase()}.`,"success");
+    }
+  }catch(err){ toast(msgDb(err),"error"); b.disabled=false; }
 });
 const irDia=d=>{ dia=d; $("dData").value=d; setModo("dia"); };
 $("dData").onchange=e=>{ if(e.target.value) irDia(e.target.value); };
@@ -516,7 +541,7 @@ function nmOuvir(){
 }
 $("novaM").onclick=()=>{
   const sv=servicosAtivos(CFG), bs=listaBarbeiros(CFG);
-  if(!sv.length) return alert("Adicione primeiro pelo menos um serviço em Personalizar.");
+  if(!sv.length){ toast("Adicione primeiro pelo menos um serviço em Personalizar.","warning"); return; }
   $("nmNome").value=""; $("nmTel").value=""; msg($("nmErr"),"");
   $("nmServ").innerHTML=sv.map((s,i)=>`<option value="${i}">${esc(s.nome)} · ${s.min} min · ${kz(s.promo>0&&s.promo<s.preco?s.promo:s.preco)}</option>`).join("");
   $("nmBw").style.display=bs.length>1?"":"none";
@@ -535,8 +560,8 @@ $("nmOk").onclick=async()=>{
   $("nmOk").disabled=true;
   try{
     await criarMarcacao(atual,CFG,OCM,{dia:data,hora,servico:sv,barbeiro:$("nmBarb").value||null,cliente:nome,telefone:$("nmTel").value.trim(),estado:"confirmada"});
-    fecharModal(); irDia(data);
-  }catch(e){ msg($("nmErr"),e.code==="ocupado"||e.code==="permission-denied"?"Esse horário acabou de ser ocupado. Escolha outro.":msgDb(e)); }
+    fecharModal(); irDia(data); toast(`Marcação de ${nome} criada para ${fmtData(data)} às ${hora}.`,"success");
+  }catch(e){ const texto=e.code==="ocupado"||e.code==="permission-denied"?"Esse horário acabou de ser ocupado. Escolha outro.":msgDb(e); msg($("nmErr"),texto); toast(texto,"error"); }
   finally{ $("nmOk").disabled=false; }
 };
 
@@ -614,19 +639,20 @@ $("salvar").onclick=async()=>{
     sujo=false; pintarSujo(); preencher(); banner();
     $("hNeg").querySelector(`option[value="${atual}"]`).textContent=c.nome;
     msg($("pOk"),"Guardado. A página dos clientes já está atualizada.");
+    toast("Alterações guardadas. A página dos clientes já está atualizada.","success");
     setTimeout(()=>msg($("pOk"),""),4000);
-  }catch(e){ msg($("pErr"),msgDb(e)); }
+  }catch(e){ msg($("pErr"),msgDb(e)); toast(msgDb(e),"error"); }
   finally{ $("salvar").disabled=false; }
 };
 $("jImp").onclick=()=>{
-  try{ CFG=limpar(JSON.parse($("e_json").value)); $("e_json").value=""; preencher(); marcarSujo(); msg($("pOk"),"Configuração aplicada. Carregue em Guardar."); }
-  catch(e){ msg($("pErr"),"JSON inválido."); }
+  try{ CFG=limpar(JSON.parse($("e_json").value)); $("e_json").value=""; preencher(); marcarSujo(); msg($("pOk"),"Configuração aplicada. Carregue em Guardar."); toast("Configuração importada. Clique em Guardar para publicar.","info"); }
+  catch(e){ msg($("pErr"),"JSON inválido."); toast("O conteúdo não é um JSON válido.","error"); }
 };
 $("jExp").onclick=e=>{
   const b=e.currentTarget, t=b.textContent, j=JSON.stringify(exportavel(),null,2);
   (navigator.clipboard?navigator.clipboard.writeText(j):Promise.reject())
-    .then(()=>{ b.textContent="Copiado"; setTimeout(()=>b.textContent=t,1600); })
-    .catch(()=>prompt("Copie a configuração:",j));
+    .then(()=>{ b.textContent="Copiado"; toast("Configuração copiada para a área de transferência.","success"); setTimeout(()=>b.textContent=t,1600); })
+    .catch(()=>{ toast("Não foi possível copiar automaticamente a configuração.","warning"); prompt("Copie a configuração:",j); });
 };
 addEventListener("beforeunload",e=>{ if(sujo){ e.preventDefault(); e.returnValue=""; } });
 </script>
