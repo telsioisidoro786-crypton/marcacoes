@@ -16,7 +16,7 @@ export async function criarMarcacao(slug, cfg, oc, p){
     data:p.dia, hora:p.hora, inicio:m, dur,
     servico:p.servico.nome, preco:final(p.servico),
     barbeiroId:b.id, barbeiroNome:b.nome||"",
-    cliente:p.cliente.slice(0,60), telefone:(p.telefone||"").slice(0,25),
+    cliente:p.cliente.slice(0,60), telefone:(p.telefone||"").slice(0,25), email:(p.email||"").trim().slice(0,120),
     estado:p.estado||"pendente", celulas:ids, criadoEm:serverTimestamp()
   });
   cel.forEach((c,i)=>batch.set(doc(db,"negocios",slug,"ocupados",ids[i]),{data:p.dia,c,b:b.id,mid:ref.id}));

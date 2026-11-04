@@ -146,7 +146,7 @@
     <div id="horas" class="slots"></div>
 
     <h2>Os seus dados</h2>
-    <div class="form-card"><label for="cliente">Nome completo</label><input id="cliente" placeholder="Como devemos chamar-lhe?" autocomplete="name" maxlength="60"><label for="tel">Número de telemóvel</label><input id="tel" placeholder="Ex.: 923 000 000" inputmode="tel" autocomplete="tel" maxlength="25"><p class="form-hint">Usaremos o contacto apenas para associar a marcação e facilitar a confirmação.</p></div>
+    <div class="form-card"><label for="cliente">Nome completo</label><input id="cliente" placeholder="Como devemos chamar-lhe?" autocomplete="name" maxlength="60"><label for="tel">Número de telemóvel</label><input id="tel" placeholder="Ex.: 923 000 000" inputmode="tel" autocomplete="tel" maxlength="25"><label for="email">Email para confirmação (opcional)</label><input id="email" type="email" placeholder="nome@exemplo.com" autocomplete="email" maxlength="120"><p class="form-hint">Se indicar um email, receberá uma notificação quando a barbearia confirmar o agendamento.</p></div>
 
     <div id="notas"></div>
   </div>
@@ -282,16 +282,20 @@ document.addEventListener("click",e=>{
 });
 $("cliente").addEventListener("input",barra);
 $("tel").addEventListener("input",barra);
+$("email").addEventListener("input",barra);
 
 /* ---------- confirmar ---------- */
 let sending=false;
 const erro=t=>{ $("erro").textContent=t; $("erro").style.display=t?"block":"none"; };
+const emailOk=v=>!v||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
 $("enviar").addEventListener("click",async()=>{
   if(sending) return;
+  const email=$('email').value.trim();
+  if(!emailOk(email)){ erro("Indique um email válido ou deixe o campo vazio."); return; }
   sending=true; erro(""); $("enviar").disabled=true; $("enviar").textContent="A guardar…";
   const p={dia:S.dia,hora:S.hora,servico:S.servico,barbeiro:S.barbeiro,
-           cliente:$("cliente").value.trim(),telefone:$("tel").value.trim()};
+           cliente:$("cliente").value.trim(),telefone:$("tel").value.trim(),email};
   try{
     const r=await criarMarcacao(slug,cfg,OC,p);
     const v={negocio:cfg.nome,servico:p.servico.nome,preco:kz(final(p.servico)),

@@ -145,15 +145,17 @@
 
   <!-- ENTRAR -->
   <div id="vLogin" class="view">
-    <div class="centro"><div class="brand"><img src="./assets/logo-mark.png" alt="Marcações"><span>Marcações</span></div><h1>Painel da barbearia</h1>
-      <p class="hint">Entre para ver e gerir as marcações.</p></div>
+    <div class="centro"><div class="brand"><img src="./assets/logo-mark.png" alt="Marcações"><span>Marcações</span></div><h1 id="authTitle">Entrar no painel</h1>
+      <p class="hint" id="authHint">Entre para ver e gerir as marcações.</p></div>
     <div class="box">
       <label style="margin-top:0">Email</label><input id="lEmail" type="email" autocomplete="email">
       <label>Palavra-passe</label><input id="lSenha" type="password" autocomplete="current-password">
+      <div id="lConfirmWrap" style="display:none"><label>Confirmar palavra-passe</label><input id="lConfirm" type="password" autocomplete="new-password"></div>
       <div class="erro" id="lErr"></div><div class="okm" id="lOk"></div>
       <button class="go" id="lEntrar">Entrar</button>
-      <button class="sec" id="lConta">Criar conta</button>
+      <button class="sec" id="lConta" type="button">Criar conta</button>
       <button class="lnk" id="lReset">Esqueci a palavra-passe</button>
+      <button class="lnk" id="lAlternar" type="button">Ainda não tenho conta</button>
     </div>
   </div>
 
@@ -326,6 +328,7 @@
   <h3>Nova marcação</h3>
   <label style="margin-top:8px">Nome do cliente</label><input id="nmNome" maxlength="60">
   <label>Telemóvel (opcional)</label><input id="nmTel" inputmode="tel" maxlength="25">
+  <label>Email para confirmação (opcional)</label><input id="nmEmail" type="email" autocomplete="email" maxlength="120">
   <label>Serviço</label><select id="nmServ"></select>
   <div id="nmBw"><label>Barbeiro</label><select id="nmBarb"></select></div>
   <label>Dia</label><input type="date" id="nmData">
@@ -421,14 +424,31 @@ const BASE=location.href.split("#")[0].split("?")[0].replace(/painel(\.html)?$/,
 const linkDe=s=>BASE+"?n="+s;
 
 /* ================= ENTRAR ================= */
+let authMode="login";
+function setAuthMode(mode){
+  authMode=mode;
+  const signup=mode==="signup";
+  $("authTitle").textContent=signup?"Criar conta":"Entrar no painel";
+  $("authHint").textContent=signup?"Crie a conta do proprietário para começar.":"Entre para ver e gerir as marcações.";
+  $("lEntrar").textContent=signup?"Criar conta":"Entrar";
+  $("lConta").style.display=signup?"none":"block";
+  $("lConfirmWrap").style.display=signup?"block":"none";
+  $("lReset").style.display=signup?"none":"block";
+  $("lAlternar").textContent=signup?"Já tenho uma conta":"Ainda não tenho conta";
+  msg($("lErr"),""); msg($("lOk"),"");
+}
+$("lConta").onclick=()=>setAuthMode("signup");
+$("lAlternar").onclick=()=>setAuthMode(authMode==="login"?"signup":"login");
 $("lEntrar").onclick=async()=>{
   msg($("lErr"),""); msg($("lOk"),"");
-  try{ await signInWithEmailAndPassword(auth,$("lEmail").value.trim(),$("lSenha").value); }
-  catch(e){ msg($("lErr"),msgDb(e)); }
-};
-$("lConta").onclick=async()=>{
-  msg($("lErr"),""); msg($("lOk"),"");
-  try{ await createUserWithEmailAndPassword(auth,$("lEmail").value.trim(),$("lSenha").value); }
+  const email=$("lEmail").value.trim(), senha=$("lSenha").value;
+  if(!email) return msg($("lErr"),"Escreva o seu email.");
+  if(senha.length<6) return msg($("lErr"),"A palavra-passe precisa de pelo menos 6 caracteres.");
+  if(authMode==="signup" && senha!==$("lConfirm").value) return msg($("lErr"),"As palavras-passe não coincidem.");
+  try{
+    if(authMode==="signup") await createUserWithEmailAndPassword(auth,email,senha);
+    else await signInWithEmailAndPassword(auth,email,senha);
+  }
   catch(e){ msg($("lErr"),msgDb(e)); }
 };
 $("lReset").onclick=async()=>{
@@ -529,6 +549,19 @@ function setModo(m){
 $("mProx").onclick=()=>setModo("proximas");
 $("mDia").onclick=()=>setModo("dia");
 const ROT={pendente:"Pendente",confirmada:"Confirmada",concluida:"Concluída",cancelada:"Cancelada"};
+const emailOk=v=>/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||"").trim());
+const dadosEmailConfirmacao=m=>({
+  slug:atual,
+  to:m.email.trim(),
+  message:{subject:`Marcação confirmada · ${CFG.nome}`,text:`Olá ${m.cliente},\n\nA sua marcação na ${CFG.nome} foi confirmada.\n\nServiço: ${m.servico}\nData: ${fmtData(m.data)}\nHora: ${m.hora}${m.barbeiroNome?`\nBarbeiro: ${m.barbeiroNome}`:""}\n\nObrigado.`},
+  tipo:"confirmacao",marcacaoId:m.id,criadoEm:serverTimestamp()
+});
+const filaEmailConfirmacao=(batch,m)=>{ if(!emailOk(m.email)) return false; batch.set(doc(collection(db,"mail")),dadosEmailConfirmacao({...m,email:m.email.trim()})); return true; };
+async function enviarEmailConfirmacao(m){
+  if(!emailOk(m.email)) return false;
+  await setDoc(doc(collection(db,"mail")),dadosEmailConfirmacao({...m,email:m.email.trim()}));
+  return true;
+}
 function cartao(m){
   const tel=(m.telefone||"").trim();
   const wa=tel?`https://wa.me/${waNum(tel)}?text=${encodeURIComponent(`Olá ${m.cliente}! A sua marcação na ${CFG.nome} para ${fmtData(m.data)} às ${m.hora} (${m.servico}) está confirmada.`)}`:"";
@@ -589,8 +622,15 @@ $("lista").addEventListener("click",async e=>{
       await batch.commit();
       toast(`Marcação de ${m.cliente} cancelada. O horário está novamente livre.`,"success");
     }else{
-      await updateDoc(ref,{estado:b.dataset.a});
-      toast(`${m.cliente}: marcação ${ROT[b.dataset.a].toLowerCase()}.`,"success");
+      if(b.dataset.a==="confirmada"){
+        const batch=writeBatch(db); batch.update(ref,{estado:"confirmada"});
+        const emailEnfileirado=filaEmailConfirmacao(batch,m);
+        await batch.commit();
+        toast(`${m.cliente}: marcação confirmada${emailEnfileirado?" e pedido de email criado":""}.`,"success");
+      }else{
+        await updateDoc(ref,{estado:b.dataset.a});
+        toast(`${m.cliente}: marcação ${ROT[b.dataset.a].toLowerCase()}.`,"success");
+      }
     }
   }catch(err){ toast(msgDb(err),"error"); b.disabled=false; }
 });
@@ -617,7 +657,7 @@ function nmOuvir(){
 $("novaM").onclick=()=>{
   const sv=servicosAtivos(CFG), bs=listaBarbeiros(CFG);
   if(!sv.length){ toast("Adicione primeiro pelo menos um serviço em Personalizar.","warning"); return; }
-  $("nmNome").value=""; $("nmTel").value=""; msg($("nmErr"),"");
+  $("nmNome").value=""; $("nmTel").value=""; $("nmEmail").value=""; msg($("nmErr"),"");
   $("nmServ").innerHTML=sv.map((s,i)=>`<option value="${i}">${esc(s.nome)} · ${s.min} min · ${kz(s.promo>0&&s.promo<s.preco?s.promo:s.preco)}</option>`).join("");
   $("nmBw").style.display=bs.length>1?"":"none";
   $("nmBarb").innerHTML=bs.map(b=>`<option value="${esc(b.id)}">${esc(b.nome)}</option>`).join("");
@@ -634,9 +674,12 @@ $("nmOk").onclick=async()=>{
   if(!hora) return msg($("nmErr"),"Escolha um horário livre.");
   $("nmOk").disabled=true;
   try{
-    await criarMarcacao(atual,CFG,OCM,{dia:data,hora,servico:sv,barbeiro:$("nmBarb").value||null,cliente:nome,telefone:$("nmTel").value.trim(),estado:"confirmada"});
-    fecharModal(); irDia(data); toast(`Marcação de ${nome} criada para ${fmtData(data)} às ${hora}.`,"success");
-  }catch(e){ const texto=e.code==="ocupado"||e.code==="permission-denied"?"Esse horário acabou de ser ocupado. Escolha outro.":msgDb(e); msg($("nmErr"),texto); toast(texto,"error"); }
+    const email=$("nmEmail").value.trim();
+    if(email && !emailOk(email)) throw Object.assign(new Error("email"),{code:"email-invalido"});
+    const r=await criarMarcacao(atual,CFG,OCM,{dia:data,hora,servico:sv,barbeiro:$("nmBarb").value||null,cliente:nome,telefone:$("nmTel").value.trim(),email,estado:"confirmada"});
+    const emailEnfileirado=await enviarEmailConfirmacao({id:r.id,data,hora,servico:sv.nome,barbeiroNome:r.barbeiro.nome||"",cliente:nome,email});
+    fecharModal(); irDia(data); toast(`Marcação de ${nome} criada para ${fmtData(data)} às ${hora}${emailEnfileirado?". Pedido de email criado":""}.`,"success");
+  }catch(e){ const texto=e.code==="email-invalido"?"Indique um email válido ou deixe o campo vazio.":e.code==="ocupado"||e.code==="permission-denied"?"Esse horário acabou de ser ocupado. Escolha outro.":msgDb(e); msg($("nmErr"),texto); toast(texto,"error"); }
   finally{ $("nmOk").disabled=false; }
 };
 

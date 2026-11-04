@@ -17,7 +17,7 @@ service cloud.firestore {
     function marcacaoValida() {
       let d = request.resource.data;
       return d.keys().hasOnly(['data','hora','inicio','dur','servico','preco','barbeiroId',
-                               'barbeiroNome','cliente','telefone','estado','celulas','criadoEm'])
+                               'barbeiroNome','cliente','telefone','email','estado','celulas','criadoEm'])
         && d.data is string && d.data.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
         && d.hora is string && d.hora.matches('^[0-9]{2}:[0-9]{2}$')
         && d.inicio is number && d.dur is number && d.dur >= 15 && d.dur <= 180
@@ -27,6 +27,7 @@ service cloud.firestore {
         && d.barbeiroNome is string && d.barbeiroNome.size() <= 40
         && d.cliente is string && d.cliente.size() > 0 && d.cliente.size() <= 60
         && d.telefone is string && d.telefone.size() <= 25
+        && d.email is string && d.email.size() <= 120
         && d.estado in ['pendente','confirmada']
         && d.celulas is list && d.celulas.size() >= 1 && d.celulas.size() <= 17
         && d.criadoEm == request.time;
@@ -76,6 +77,24 @@ service cloud.firestore {
         allow delete: if isOwner(slug);
         allow update: if false;
       }
+
+    }
+
+    match /mail/{id} {
+      // Fila consumida por Firebase Trigger Email; só o proprietário da barbearia pode criar pedidos.
+      allow create: if request.auth != null
+        && request.resource.data.slug is string
+        && isOwner(request.resource.data.slug)
+        && request.resource.data.keys().hasOnly(['slug','to','message','tipo','marcacaoId','criadoEm'])
+        && request.resource.data.to is string
+        && request.resource.data.to.matches('^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$')
+        && request.resource.data.message is map
+        && request.resource.data.message.subject is string
+        && request.resource.data.message.text is string
+        && request.resource.data.tipo == 'confirmacao'
+        && request.resource.data.marcacaoId is string
+        && request.resource.data.criadoEm == request.time;
+      allow read, update, delete: if false;
     }
   }
 }
