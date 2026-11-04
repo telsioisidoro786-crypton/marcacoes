@@ -3,11 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090909">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" type="image/png" sizes="500x500" href="./assets/logo-mark.png">
 <link rel="apple-touch-icon" href="./assets/logo-mark.png">
+<link rel="manifest" href="./manifest.webmanifest">
+<script src="./pwa.js" defer></script>
 <title>Marcações</title>
 <style>
   :root{--acc:#f5f5f5;--bg:#090909;--card:#151515;--line:#2d2d2d;--txt:#f7f7f7;--mut:#9b9b9b;--ok:#f5f5f5;
@@ -109,6 +115,7 @@
   .hero-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0 0;text-align:left}.info-card{min-height:58px;background:rgba(25,25,25,.78);border:1px solid #343434;border-radius:14px;padding:11px 12px;color:#d9d9d9;font-size:.78rem;line-height:1.35}.info-card strong{display:block;color:#777;text-transform:uppercase;letter-spacing:.12em;font-size:.6rem;margin-bottom:4px}.info-card p{margin:0}.info-card.muted{color:var(--mut)}
   .section-lead{margin:-5px 0 10px;color:var(--mut);font-size:.78rem}.service-copy{display:flex;flex-direction:column;gap:4px;min-width:0}.service-name{font-family:var(--fh);font-weight:800;font-size:1rem}.service-meta{font-size:.75rem;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.price small{display:block;color:var(--mut);font:500 .63rem var(--fb);text-transform:uppercase;letter-spacing:.08em}.barber-chip{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:120px;text-align:left}.barber-chip .chip-sub{font-size:.68rem;color:var(--mut)}.barber-chip.sel .chip-sub{color:#555}.form-card{background:linear-gradient(145deg,#181818,#121212);border:1px solid #333;border-radius:18px;padding:14px;margin-top:4px}.form-card label{display:block;margin:0 0 6px;color:#ddd;font-size:.78rem;font-weight:700}.form-card input+label{margin-top:10px}.form-hint{margin:10px 0 0;color:var(--mut);font-size:.72rem;line-height:1.4}
   @media (max-width:390px){.hero-meta{grid-template-columns:1fr}.slots{grid-template-columns:repeat(3,1fr)}}
+  .pwa-card{max-width:480px;margin:14px auto 0;padding:12px 14px;background:#151515;border:1px solid #333;border-radius:16px;color:#f7f7f7;text-align:left;box-shadow:0 10px 24px rgba(0,0,0,.12)}.pwa-card[hidden]{display:none}.pwa-card strong{display:block;font:800 .84rem var(--fh);margin-bottom:4px}.pwa-card p{margin:0;color:var(--mut);font-size:.74rem;line-height:1.45}.pwa-actions{display:flex;gap:8px;margin-top:10px}.pwa-actions button{border:1px solid #444;background:#242424;color:#fff;border-radius:10px;padding:8px 11px;font:700 .76rem var(--fb);cursor:pointer}.pwa-actions button:first-child{background:#f5f5f5;color:#090909;border-color:#f5f5f5}
 </style>
 </head>
 <body>
@@ -128,6 +135,7 @@
       <div class="acoes" id="acoes"></div>
       <div class="aviso" id="aviso" style="display:none"></div>
     </header>
+    <aside class="pwa-card" id="pwaInstall" hidden><strong>Instalar Marcações</strong><p data-install-help>Tenha acesso rápido à página e carregue o agendamento com mais rapidez.</p><div class="pwa-actions"><button id="pwaInstallBtn" type="button">Instalar aplicação</button><button id="pwaPushBtn" type="button">Ativar notificações</button><button data-install-close type="button">Agora não</button></div></aside>
 
     <h2>Serviço</h2>
     <p class="section-lead">Escolha o serviço que pretende realizar.</p>

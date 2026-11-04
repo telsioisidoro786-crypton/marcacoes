@@ -3,9 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090909">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="robots" content="noindex">
 <link rel="icon" type="image/png" sizes="500x500" href="./assets/logo-mark.png">
 <link rel="apple-touch-icon" href="./assets/logo-mark.png">
+<link rel="manifest" href="./manifest.webmanifest">
+<script src="./pwa.js" defer></script>
 <title>Painel · Marcações</title>
 <style>
   :root{--acc:#f5f5f5;--bg:#090909;--card:#151515;--line:#2d2d2d;--txt:#f7f7f7;--mut:#9b9b9b;--ok:#f5f5f5;--bad:#ef6b70;--r:16px;--fh:Manrope,system-ui,sans-serif;--fb:Inter,system-ui,sans-serif;--shadow:0 18px 50px rgba(0,0,0,.24)}
@@ -134,11 +140,13 @@
   .toast-close:hover{color:var(--txt);transform:scale(1.08)}
   @media (max-width:560px){.toast-region{right:12px;bottom:12px;width:calc(100vw - 24px)}}
   @media (prefers-reduced-motion:reduce){.toast{transition:none;transform:none;opacity:1}.toast.on{transform:none}}
+  .pwa-card{background:#151515;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin:0 0 14px}.pwa-card[hidden]{display:none}.pwa-card strong{display:block;font:800 .84rem var(--fh);margin-bottom:4px}.pwa-card p{margin:0;color:var(--mut);font-size:.74rem;line-height:1.45}.pwa-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.pwa-actions button{border:1px solid #444;background:#242424;color:#fff;border-radius:9px;padding:8px 10px;font:700 .75rem var(--fb);cursor:pointer}.pwa-actions button:first-child{background:#f5f5f5;color:#090909;border-color:#f5f5f5}
 </style>
 </head>
 <body>
 <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="false"></div>
 <div class="w">
+  <aside class="pwa-card" id="pwaInstall" hidden><strong>Instalar Marcações</strong><p data-install-help>Instale o painel para o abrir como aplicação e aceder-lhe mais rapidamente.</p><div class="pwa-actions"><button id="pwaInstallBtn" type="button">Instalar aplicação</button><button id="pwaPushBtn" type="button">Ativar notificações</button><button data-install-close type="button">Agora não</button></div></aside>
 
   <div id="aviso" class="view"><div class="box"><b>Firebase por configurar</b>
     <p class="hint">Edite <code>firebase-config.js</code> e cole os dados do seu projeto Firebase.</p></div></div>
