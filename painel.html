@@ -122,6 +122,7 @@
   .tags span{background:var(--bg);border:1px solid var(--line);border-radius:20px;padding:5px 5px 5px 12px;font-size:.82rem;display:flex;align-items:center;gap:6px}
   .tags button{border:0;background:transparent;color:var(--mut);cursor:pointer;font-size:.9rem}
   .salvar{position:sticky;bottom:0;background:var(--bg);padding:12px 0 4px;border-top:1px solid var(--line);margin-top:14px}
+  .team-guard{background:#101010;border:1px solid #3a3a3a;padding:14px;margin-bottom:10px}.team-guard strong{display:block;font:700 .9rem var(--fh);margin-bottom:5px}.team-guard p{margin:0 0 10px;color:var(--mut);font-size:.78rem;line-height:1.45}.team-guard .guard-row{display:grid;grid-template-columns:1fr auto;gap:7px}.team-guard input{margin:0;background:#090909}.team-guard button{border:0;background:#f5f5f5;color:#090909;border-radius:10px;padding:0 14px;font-weight:800;cursor:pointer}.team-guard .guard-err{color:#ffb4b4;font-size:.76rem;margin-top:8px;display:none}.team-secure{font-size:.72rem;color:var(--mut);margin:0 0 10px}
   .toast-region{position:fixed;right:18px;bottom:18px;z-index:100;display:flex;flex-direction:column;gap:10px;width:min(380px,calc(100vw - 36px));pointer-events:none}
   .toast{display:grid;grid-template-columns:10px 1fr auto;align-items:center;gap:11px;background:rgba(24,24,24,.96);border:1px solid #484848;border-left:3px solid #f5f5f5;border-radius:14px;padding:13px 12px;box-shadow:0 18px 44px rgba(0,0,0,.38);color:var(--txt);font-size:.86rem;line-height:1.4;opacity:0;transform:translateY(14px) scale(.98);transition:opacity .25s ease,transform .25s ease;pointer-events:auto}
   .toast.on{opacity:1;transform:translateY(0) scale(1)}
@@ -274,9 +275,16 @@
       <details>
         <summary>Equipa</summary>
         <div>
-          <div id="e_barb"></div>
-          <button class="add" id="addB">+ Adicionar barbeiro</button>
-          <p class="hint">Com 2 ou mais, o cliente escolhe (ou "Qualquer um"). Marque os dias de folga de cada um.</p>
+          <div class="team-guard" id="teamGuard">
+            <strong>Área protegida</strong>
+            <p>Para gerir barbeiros, confirme a palavra-passe da conta proprietária. A confirmação é temporária e não fica guardada.</p>
+            <div class="guard-row"><input id="teamPassword" type="password" autocomplete="current-password" placeholder="Palavra-passe da conta"><button id="teamUnlock" type="button">Desbloquear</button></div>
+            <div class="guard-err" id="teamGuardErr"></div>
+          </div>
+          <div id="teamEditor" style="display:none"><p class="team-secure">Sessão de gestão protegida ativa por 10 minutos.</p><div id="e_barb"></div>
+            <button class="add" id="addB">+ Adicionar barbeiro</button>
+            <p class="hint">Com 2 ou mais, o cliente escolhe (ou "Qualquer um"). Marque os dias de folga de cada um.</p>
+          </div>
         </div>
       </details>
 
@@ -366,10 +374,48 @@ if(!configurado){ mostrar("aviso"); throw new Error("Firebase por configurar"); 
 
 const AUTH_URL="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 const { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-        signOut, sendPasswordResetEmail } = await import(AUTH_URL);
+        signOut, sendPasswordResetEmail, EmailAuthProvider, reauthenticateWithCredential } = await import(AUTH_URL);
 const auth=getAuth(app);
 
 let USER=null, NEG=[], atual=null, CFG=null, dia=hoje(), modo="proximas", unsubM=null, LISTA=[], sujo=false;
+let equipaAutorizadaAte=0, equipaEditada=false;
+const TEMPO_GESTAO_EQUIPA=10*60*1000;
+const podeGerirEquipa=()=>!!USER && Date.now()<equipaAutorizadaAte;
+function atualizarBloqueioEquipa(){
+  const ok=podeGerirEquipa();
+  $("teamGuard").style.display=ok?"none":"block";
+  $("teamEditor").style.display=ok?"block":"none";
+  if(!ok) $("teamPassword").value="";
+}
+function erroAuthEquipa(e){
+  return ({"auth/wrong-password":"Palavra-passe incorreta.","auth/invalid-credential":"Não foi possível confirmar a identidade.","auth/too-many-requests":"Demasiadas tentativas. Aguarde antes de tentar novamente.","auth/user-disabled":"Esta conta está desativada."}[e.code]||"Não foi possível desbloquear a gestão da equipa.");
+}
+let equipaTimer=null;
+function bloquearEquipa(){
+  equipaAutorizadaAte=0;
+  if(equipaTimer){ clearTimeout(equipaTimer); equipaTimer=null; }
+  atualizarBloqueioEquipa();
+}
+function agendarBloqueioEquipa(){
+  if(equipaTimer) clearTimeout(equipaTimer);
+  equipaTimer=setTimeout(()=>{ bloquearEquipa(); toast("A sessão de gestão da equipa expirou.","info"); },TEMPO_GESTAO_EQUIPA);
+}
+$("teamUnlock").onclick=async()=>{
+  const password=$("teamPassword").value;
+  const erro=$("teamGuardErr");
+  erro.textContent=""; erro.style.display="none";
+  if(!USER?.email || !password){ erro.textContent="Escreva a palavra-passe da conta."; erro.style.display="block"; return; }
+  const button=$("teamUnlock"); button.disabled=true; button.textContent="A confirmar…";
+  try{
+    const credential=EmailAuthProvider.credential(USER.email,password);
+    await reauthenticateWithCredential(USER,credential);
+    equipaAutorizadaAte=Date.now()+TEMPO_GESTAO_EQUIPA;
+    atualizarBloqueioEquipa(); agendarBloqueioEquipa();
+    toast("Gestão da equipa desbloqueada por 10 minutos.","success");
+  }catch(e){ erro.textContent=erroAuthEquipa(e); erro.style.display="block"; toast(erroAuthEquipa(e),"error"); }
+  finally{ button.disabled=false; button.textContent="Desbloquear"; }
+};
+$("teamPassword").addEventListener("keydown",e=>{ if(e.key==="Enter") $("teamUnlock").click(); });
 const BASE=location.href.split("#")[0].split("?")[0].replace(/painel(\.html)?$/,"");
 /* link com ?n= funciona em qualquer alojamento, sem regras de redirecionamento */
 const linkDe=s=>BASE+"?n="+s;
@@ -397,6 +443,7 @@ $("hSair").onclick=sair; $("cnSair").onclick=sair;
 
 onAuthStateChanged(auth,async u=>{
   USER=u;
+  if(!u) bloquearEquipa();
   if(unsubM){ unsubM(); unsubM=null; }
   if(!u){ NEG=[]; atual=null; mostrar("vLogin"); return; }
   await carregarNegocios();
@@ -415,6 +462,7 @@ async function carregarNegocios(alvo){
 }
 function selecionar(slug){
   atual=slug; lsSet(slug);
+  bloquearEquipa();
   const n=NEG.find(x=>x.slug===slug);
   CFG=limpar(n.data.cfg); sujo=false; pintarSujo();
   $("hNeg").innerHTML=NEG.map(x=>`<option value="${esc(x.slug)}" ${x.slug===slug?"selected":""}>${esc(limpar(x.data.cfg).nome)}</option>`).join("");
@@ -634,9 +682,9 @@ $("tPers").addEventListener("input",e=>{
   const t=e.target, d=t.dataset;
   if(d.f){ let v=t.value; if(d.t==="num") v=+v; if(d.t==="digits") v=v.replace(/\D/g,""); CFG[d.f]=v; }
   else if(d.l==="s"){ const s=CFG.servicos[+d.i]; s[d.k]=(d.k==="nome"||d.k==="desc")?t.value:(Number(t.value)||0); }
-  else if(d.l==="b"){ CFG.barbeiros[+d.i].nome=t.value; }
+  else if(d.l==="b"){ if(!podeGerirEquipa()) return; CFG.barbeiros[+d.i].nome=t.value; equipaEditada=true; }
   else if(d.bf!==undefined){ const b=CFG.barbeiros[+d.bf], x=+d.d;
-    b.folgas=t.checked?[...new Set([...b.folgas,x])]:b.folgas.filter(y=>y!==x); }
+    if(!podeGerirEquipa()) return; b.folgas=t.checked?[...new Set([...b.folgas,x])]:b.folgas.filter(y=>y!==x); equipaEditada=true; }
   else if(d.h!==undefined){ const h=CFG.horario[+d.h]; if(d.k==="on") h.on=t.checked; else h[d.k]=t.value||h[d.k]; }
   else return;
   marcarSujo();
@@ -645,11 +693,11 @@ $("tPers").addEventListener("click",e=>{
   const t=e.target.closest("button"); if(!t) return;
   if(t.dataset.cor){ CFG.cor=t.dataset.cor; $("e_cor").value=CFG.cor; marcarSujo(); }
   else if(t.dataset.rm==="s"){ CFG.servicos.splice(+t.dataset.i,1); listas(); marcarSujo(); }
-  else if(t.dataset.rm==="b"){ CFG.barbeiros.splice(+t.dataset.i,1); listas(); marcarSujo(); }
+  else if(t.dataset.rm==="b"){ if(!podeGerirEquipa()){ toast("Desbloqueie a gestão da equipa para alterar barbeiros.","warning"); return; } CFG.barbeiros.splice(+t.dataset.i,1); equipaEditada=true; listas(); marcarSujo(); }
   else if(t.dataset.rmf!==undefined){ CFG.fechados.splice(+t.dataset.rmf,1); listas(); marcarSujo(); }
 });
 $("addS").onclick=()=>{ CFG.servicos.push({nome:"",desc:"",min:30,preco:1000,promo:0}); listas(); marcarSujo(); };
-$("addB").onclick=()=>{ CFG.barbeiros.push({id:novoId(),nome:"",folgas:[]}); listas(); marcarSujo(); };
+$("addB").onclick=()=>{ if(!podeGerirEquipa()){ toast("Desbloqueie a gestão da equipa para alterar barbeiros.","warning"); return; } CFG.barbeiros.push({id:novoId(),nome:"",folgas:[]}); equipaEditada=true; listas(); marcarSujo(); };
 $("addF").onclick=()=>{
   const v=$("e_fdata").value;
   if(v && !CFG.fechados.includes(v)){ CFG.fechados.push(v); CFG.fechados.sort(); $("e_fdata").value=""; listas(); marcarSujo(); }
@@ -658,11 +706,16 @@ const exportavel=()=>limpar({...CFG,servicos:CFG.servicos.filter(s=>s.nome.trim(
 
 $("salvar").onclick=async()=>{
   msg($("pErr"),""); msg($("pOk"),"");
+  if(equipaEditada && !podeGerirEquipa()){
+    toast("Desbloqueie novamente a gestão da equipa antes de guardar alterações aos barbeiros.","warning");
+    return;
+  }
   $("salvar").disabled=true;
   try{
     const c=exportavel();
     await updateDoc(doc(db,"negocios",atual),{cfg:c,atualizadoEm:serverTimestamp()});
     CFG=c; NEG.find(n=>n.slug===atual).data.cfg=c;
+    equipaEditada=false;
     sujo=false; pintarSujo(); preencher(); banner();
     $("hNeg").querySelector(`option[value="${atual}"]`).textContent=c.nome;
     msg($("pOk"),"Guardado. A página dos clientes já está atualizada.");
